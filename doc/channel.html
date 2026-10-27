@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Stochastic Channel Simulation — NeuroEdTools</title>
+    <link rel="stylesheet" href="css/common.css">
+    <link rel="stylesheet" href="css/channel.css">
+</head>
+<body>
+    <script src="js/header.js"></script>
+    <div id="page-wrapper">
+    <h1>Stochastic Channel Simulation</h1>
+
+    <!-- Part 1: Simple Gating (Constant Rates) -->
+    <div class="model-section">
+        <h2>Part 1: Simple Gating with Constant Rates</h2>
+        <div class="main-container">
+            <div class="controls">
+                <div class="slider-container">
+                    <label for="alpha_p1">Alpha (Opening Rate)</label>
+                    <input type="range" id="alpha_p1" min="0.01" max="0.99" value="0.1" step="0.01">
+                    <span id="alpha_p1-value">0.10</span>
+                </div>
+                <div class="slider-container">
+                    <label for="beta_p1">Beta (Closing Rate)</label>
+                    <input type="range" id="beta_p1" min="0.01" max="0.99" value="0.2" step="0.01">
+                    <span id="beta_p1-value">0.20</span>
+                </div>
+                <div class="slider-container">
+                    <label for="num_channels_p1">Number of Channels</label>
+                    <input type="range" id="num_channels_p1" min="1" max="100" value="1" step="1">
+                    <span id="num_channels_p1-value">1</span>
+                </div>
+                <div class="slider-container">
+                    <label for="duration_p1">Simulation Duration (ms)</label>
+                    <input type="range" id="duration_p1" min="10" max="200" value="100" step="1">
+                    <span id="duration_p1-value">100</span>
+                </div>
+                <img src="assets/images/channel1.png" alt="Channel state diagram for Part 1" style="width: 100%; height: auto; margin-top: 15px;">
+            </div>
+            <div class="plots-container">
+                <div class="plot-group">
+                    <canvas id="individual-plot-p1" width="800" height="300"></canvas>
+                </div>
+                <div class="plot-group">
+                    <canvas id="total-plot-p1" width="800" height="200"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Part 2: Single Voltage-Dependent Gate -->
+    <div class="model-section">
+        <h2>Part 2: Single Voltage-Dependent Gate</h2>
+        <div class="main-container">
+            <div class="controls">
+                <div class="slider-container">
+                    <label for="voltage_p2">Membrane Voltage (mV)</label>
+                    <input type="range" id="voltage_p2" min="-100" max="100" value="-20" step="1">
+                    <span id="voltage_p2-value">-20</span>
+                </div>
+                <div class="slider-container">
+                    <label for="num_channels_p2">Number of Channels</label>
+                    <input type="range" id="num_channels_p2" min="1" max="100" value="1" step="1">
+                    <span id="num_channels_p2-value">1</span>
+                </div>
+                <div class="slider-container">
+                    <label for="duration_p2">Simulation Duration (ms)</label>
+                    <input type="range" id="duration_p2" min="10" max="200" value="100" step="1">
+                    <span id="duration_p2-value">100</span>
+                </div>
+                <canvas id="ab_plot_p2" width="310" height="180"></canvas>
+                <img src="assets/images/channel2.png" alt="Channel state diagram for Part 2" style="width: 100%; height: auto; margin-top: 15px;">
+            </div>
+            <div class="plots-container">
+                <div class="plot-group">
+                    <canvas id="individual-plot-p2" width="800" height="300"></canvas>
+                </div>
+                <div class="plot-group">
+                    <canvas id="open-channels-plot-p2" width="800" height="200"></canvas>
+                </div>
+                <div class="plot-group">
+                    <canvas id="total-plot-p2" width="800" height="200"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Part 3: Full Potassium Channel (4 Gates) -->
+    <div class="model-section">
+        <h2>Part 3: Potassium (K+) Channel</h2>
+        <div class="main-container">
+            <div class="controls">
+                 <div class="slider-container">
+                    <label for="voltage_p3">Membrane Voltage (mV)</label>
+                    <input type="range" id="voltage_p3" min="-100" max="100" value="-20" step="1">
+                    <span id="voltage_p3-value">-20</span>
+                </div>
+                <div class="slider-container">
+                    <label for="num_channels_p3">Number of Channels</label>
+                    <input type="range" id="num_channels_p3" min="1" max="100" value="5" step="1">
+                    <span id="num_channels_p3-value">5</span>
+                </div>
+                <div class="slider-container">
+                    <label for="duration_p3">Simulation Duration (ms)</label>
+                    <input type="range" id="duration_p3" min="10" max="200" value="100" step="1">
+                    <span id="duration_p3-value">100</span>
+                </div>
+                <canvas id="ab_plot_p3" width="310" height="180"></canvas>
+                <img src="assets/images/channel3.png" alt="Channel state diagram for Part 3" style="width: 100%; height: auto; margin-top: 15px;">
+            </div>
+            <div class="plots-container">
+                <div class="plot-group">
+                    <canvas id="individual-plot-p3" width="800" height="300"></canvas>
+                </div>
+                <div class="plot-group">
+                    <canvas id="open-channels-plot-p3" width="800" height="200"></canvas>
+                </div>
+                <div class="plot-group">
+                    <canvas id="total-plot-p3" width="800" height="200"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Part 4: Full Sodium Channel (3m, 1h Gates) -->
+    <div class="model-section">
+        <h2>Part 4: Sodium (Na+) Channel</h2>
+
+        <div class="main-container">
+            <div class="controls">
+                <div class="slider-container">
+                    <label for="voltage_p4">Membrane Voltage (mV)</label>
+                    <input type="range" id="voltage_p4" min="-100" max="100" value="-20" step="1">
+                    <span id="voltage_p4-value">-20</span>
+                </div>
+                <div class="slider-container">
+                    <label for="num_channels_p4">Number of Channels</label>
+                    <input type="range" id="num_channels_p4" min="1" max="100" value="5" step="1">
+                    <span id="num_channels_p4-value">5</span>
+                </div>
+                <div class="slider-container">
+                    <label for="duration_p4">Simulation Duration (ms)</label>
+                    <input type="range" id="duration_p4" min="10" max="200" value="100" step="1">
+                    <span id="duration_p4-value">100</span>
+                </div>
+                <canvas id="ab_plot_p4_m" width="310" height="180"></canvas>
+                <canvas id="ab_plot_p4_h" width="310" height="180"></canvas>
+                <img src="assets/images/channel4.png" alt="Channel state diagram for Part 4" style="width: 100%; height: auto; margin-top: 15px;">
+            </div>
+            <div class="plots-container">
+                <div class="plot-group">
+                    <canvas id="individual-plot-p4" width="800" height="300"></canvas>
+                </div>
+                <div class="plot-group">
+                    <canvas id="open-channels-plot-p4" width="800" height="200"></canvas>
+                </div>
+                <div class="plot-group">
+                    <canvas id="total-plot-p4" width="800" height="200"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+    </div>
+    <script src="js/channel.js"></script>
+</body>
+</html>

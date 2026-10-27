@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hodgkin-Huxley Model — NeuroEdTools</title>
+    <link rel="stylesheet" href="css/common.css">
+    <link rel="stylesheet" href="css/hh.css">
+</head>
+<body>
+    <script src="js/header.js"></script>
+    <div id="page-wrapper">
+    <h1>Hodgkin-Huxley Model</h1>
+    <div class="main-container">
+        <div class="controls">
+            <h2>Mode</h2>
+            <div class="mode-selector">
+                <input type="radio" id="mode-current" name="mode" value="current" checked>
+                <label for="mode-current">Current Clamp</label>
+            </div>
+            <div class="mode-selector">
+                <input type="radio" id="mode-voltage" name="mode" value="voltage">
+                <label for="mode-voltage">Voltage Clamp</label>
+            </div>
+
+            <h2>Parameters</h2>
+            <div class="slider-container" id="current-clamp-controls">
+                <label for="i_inj">Injected Current (uA/cm^2)</label>
+                <input type="range" id="i_inj" min="-3" max="12" value="5" step="0.1">
+                <span id="i_inj-value">5</span>
+            </div>
+            <div id="voltage-clamp-controls" style="display: none;">
+                <div class="slider-container" style="padding-bottom: 12px;">
+                    <label for="v_hold">Holding Voltage (mV)</label>
+                    <input type="range" id="v_hold" min="-100" max="0" value="-65" step="1">
+                    <span id="v_hold-value">-65</span>
+                </div>
+                <div class="slider-container">
+                    <label for="v_clamp">Clamp Voltage (mV)</label>
+                    <input type="range" id="v_clamp" min="-100" max="100" value="-20" step="1">
+                    <span id="v_clamp-value">-20</span>
+                </div>
+            </div>
+
+            <h2>Stimulus</h2>
+            <div class="slider-container">
+                <label for="t_sim">Simulation Duration (ms)</label>
+                <input type="range" id="t_sim" min="10" max="200" value="20" step="1">
+                <span id="t_sim-value">20</span>
+            </div>
+            <div class="slider-container">
+                <label for="t_start">Start Time (ms)</label>
+                <input type="range" id="t_start" min="0" max="50" value="2" step="1">
+                <span id="t_start-value">2</span>
+            </div>
+            <div class="slider-container">
+                <label for="t_end">End Time (ms)</label>
+                <input type="range" id="t_end" min="0" max="50" value="10" step="1">
+                <span id="t_end-value">10</span>
+            </div>
+
+            <h2>Conductances</h2>
+            <div class="slider-container">
+                <label for="gNa">g_Na (mS/cm^2)</label>
+                <input type="range" id="gNa" min="0" max="200" value="120" step="0.1">
+                <span id="gNa-value">120</span>
+            </div>
+            <div class="slider-container">
+                <label for="gK">g_K (mS/cm^2)</label>
+                <input type="range" id="gK" min="0" max="100" value="36" step="0.1">
+                <span id="gK-value">36</span>
+            </div>
+            <div class="slider-container">
+                <label for="gL">g_L (mS/cm^2)</label>
+                <input type="range" id="gL" min="0" max="1" value="0.3" step="0.01">
+                <span id="gL-value">0.3</span>
+            </div>
+            <h2>Reversal potentials</h2>
+            <div class="slider-container">
+                <label for="eNa">E_Na (mV)</label>
+                <input type="range" id="eNa" min="0" max="100" value="50" step="0.1">
+                <span id="eNa-value">50</span>
+            </div>
+            <div class="slider-container">
+                <label for="eK">E_K (mV)</label>
+                <input type="range" id="eK" min="-100" max="0" value="-77" step="0.1">
+                <span id="eK-value">-77</span>
+            </div>
+            <div class="slider-container">
+                <label for="eL">E_L (mV)</label>
+                <input type="range" id="eL" min="-100" max="0" value="-54.4" step="0.1">
+                <span id="eL-value">-54.4</span>
+            </div>
+        </div>
+        <div class="all-plots-container">
+            <div class="plots-container">
+                <div class="plot-group">
+                    <canvas id="plot-v" width="500" height="220"></canvas>
+                    <div class="legend" id="legend-v"></div>
+                </div>
+                <div class="plot-group">
+                    <canvas id="plot-gating" width="500" height="220"></canvas>
+                    <div class="legend" id="legend-gating"></div>
+                </div>
+                <div class="plot-group">
+                    <canvas id="plot-conductances" width="500" height="220"></canvas>
+                    <div class="legend" id="legend-conductances"></div>
+                </div>
+                <div class="plot-group">
+                    <canvas id="plot-currents" width="500" height="220"></canvas>
+                    <div class="legend" id="legend-currents"></div>
+                </div>
+            </div>
+            <div class="plots-container-right">
+                <div class="plot-group">
+                    <canvas id="plot-steady-state" width="400" height="220"></canvas>
+                    <div class="legend" id="legend-steady-state"></div>
+                </div>
+                <div class="plot-group">
+                    <canvas id="plot-time-constants" width="400" height="220"></canvas>
+                    <div class="legend" id="legend-time-constants"></div>
+                </div>
+                <div class="img-group">
+                    <img src="assets/images/HH_eqn.png" onerror="this.parentElement.style.display='none'">
+                </div>
+            </div>
+        </div>
+    </div>
+    </div>
+    <script src="js/hh.js"></script>
+</body>
+</html>

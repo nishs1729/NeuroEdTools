@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Izhikevich Model — NeuroEdTools</title>
+    <link rel="stylesheet" href="css/common.css">
+    <link rel="stylesheet" href="css/izhikevich.css">
+</head>
+<body>
+    <script src="js/header.js"></script>
+    <div id="page-wrapper">
+        <h1>Izhikevich Model</h1>
+
+        <div id="izhikevich-container" class="main-container">
+            <div class="controls">
+                <h2>Parameters</h2>
+                <div class="slider-container">
+                    <label for="firing_pattern">Firing Pattern</label>
+                    <select id="firing_pattern">
+                        <option value="custom">Custom</option>
+                        <option value="rs" selected>Regular Spiking</option>
+                        <option value="ib">Intrinsically Bursting</option>
+                        <option value="ch">Chattering</option>
+                        <option value="fs">Fast Spiking</option>
+                        <option value="lts">Low-Threshold Spiking</option>
+                        <option value="tc">Thalamo-Cortical</option>
+                        <option value="rz">Resonator</option>
+                        <option value="sfa">Spike Frequency Adaptation</option>
+                        <option value="class1">Class 1 Excitability</option>
+                        <option value="class2">Class 2 Excitability</option>
+                        <option value="sl">Spike Latency</option>
+                        <option value="so">Subthreshold Oscillations</option>
+                        <option value="res">Rebound Spike</option>
+                        <option value="reb">Rebound Burst</option>
+                        <option value="tv">Threshold Variability</option>
+                        <option value="bs">Bistability</option>
+                        <option value="dap">Depolarizing After-Potential</option>
+                        <option value="ac">Accommodation</option>
+                        <option value="iis">Inhibition-Induced Spiking</option>
+                        <option value="iib">Inhibition-Induced Bursting</option>
+                    </select>
+                </div>
+                <div class="slider-container">
+                    <label for="param_a">Parameter a</label>
+                    <input type="range" id="param_a" min="0.01" max="0.2" value="0.02" step="0.01">
+                    <span id="param_a-value">0.02</span>
+                </div>
+                <div class="slider-container">
+                    <label for="param_b">Parameter b</label>
+                    <input type="range" id="param_b" min="0.1" max="0.3" value="0.2" step="0.01">
+                    <span id="param_b-value">0.20</span>
+                </div>
+                <div class="slider-container">
+                    <label for="param_c">Parameter c</label>
+                    <input type="range" id="param_c" min="-80" max="-30" value="-65" step="1">
+                    <span id="param_c-value">-65</span>
+                </div>
+                <div class="slider-container">
+                    <label for="param_d">Parameter d</label>
+                    <input type="range" id="param_d" min="0.05" max="10" value="8" step="0.05">
+                    <span id="param_d-value">8.00</span>
+                </div>
+                <div class="slider-container">
+                    <label for="param_i">External Current (I)</label>
+                    <input type="range" id="param_i" min="0" max="20" value="10" step="0.5">
+                    <span id="param_i-value">10.0</span>
+                </div>
+                <div class="slider-container">
+                    <label for="duration">Simulation Duration (ms)</label>
+                    <input type="range" id="duration" min="10" max="1000" value="200" step="10">
+                    <span id="duration-value">200</span>
+                </div>
+                <div class="slider-container">
+                    <label for="v_init">Initial V</label>
+                    <input type="range" id="v_init" min="-100" max="0" value="-70" step="1">
+                    <span id="v_init-value">-70</span>
+                </div>
+                <div class="slider-container">
+                    <label for="u_init">Initial U</label>
+                    <input type="range" id="u_init" min="-30" max="0" value="-14" step="1">
+                    <span id="u_init-value">-14</span>
+                </div>
+                <img src="assets/images/izhikevich_model.png" alt="Izhikevich Model Equations">
+            </div>
+            <div class="plots-container">
+                <div class="plot-group">
+                    <canvas id="v-w-plot" width="700" height="300"></canvas>
+                </div>
+                <div class="plot-group">
+                    <canvas id="phase-plot" width="700" height="350"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script src="js/izhikevich.js"></script>
+</body>
+</html>

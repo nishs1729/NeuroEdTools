@@ -1,0 +1,50 @@
+.container {
+  width: 100%;
+  max-width: 900px;
+  padding: 20px 24px 40px;
+}
+
+.container h1 {
+  text-align: center;
+  margin-bottom: 8px;
+  color: var(--text-color);
+}
+
+.tools-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 20px;
+  padding: 20px 0;
+}
+
+.tool-card {
+  display: block; /* Make the whole card clickable */
+  background: var(--card-bg); /* Use theme-aware card background */
+  color: var(--text-color); /* Use theme-aware text color */
+  padding: 25px;
+  border-radius: 12px;
+  box-shadow: var(--tool-card-shadow);
+  text-decoration: none; /* Remove underline from link */
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  text-align: center;
+}
+
+.tool-card:hover {
+  transform: translateY(-5px);
+  box-shadow: var(--tool-card-shadow-hover);
+}
+
+.tool-card h3 {
+  margin: 0;
+  font-size: 1.5em;
+  font-weight: 600;
+}
+
+/* Dark theme adjustments for card shadow */
+[data-theme="dark"] .tool-card {
+  box-shadow: var(--tool-card-shadow);
+}
+
+[data-theme="dark"] .tool-card:hover {
+  box-shadow: var(--tool-card-shadow-hover);
+}
