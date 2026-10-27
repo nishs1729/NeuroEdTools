@@ -2,7 +2,7 @@
  * unit/izhikevich.test.js
  *
  * Tests for the Izhikevich neuron model math.
- * Functions are replicated exactly from doc/js/izhikevich.js.
+ * Functions are replicated exactly from docs/js/izhikevich.js.
  */
 
 import { describe, it, expect } from 'vitest';

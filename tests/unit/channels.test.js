@@ -2,7 +2,7 @@
  * unit/channels.test.js
  *
  * Tests for stochastic ion channel gating math.
- * Rate functions replicated exactly from doc/js/channel.js (HH object).
+ * Rate functions replicated exactly from docs/js/channel.js (HH object).
  * Statistical tests use large-N / many-trial approaches with seeded Math.random
  * replaced by deterministic inputs where possible.
  */

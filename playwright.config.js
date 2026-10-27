@@ -13,7 +13,7 @@ export default defineConfig({
     video: 'on-first-retry',
   },
   webServer: {
-    command: 'npx serve doc -p 3131',
+    command: 'npx serve docs -p 3131',
     url: 'http://localhost:3131',
     reuseExistingServer: !process.env.CI,
     timeout: 10_000,

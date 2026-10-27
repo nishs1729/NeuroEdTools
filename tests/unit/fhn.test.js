@@ -2,7 +2,7 @@
  * unit/fhn.test.js
  *
  * Tests for the FitzHugh-Nagumo model math.
- * Functions are replicated exactly from doc/js/fnh.js.
+ * Functions are replicated exactly from docs/js/fnh.js.
  */
 
 import { describe, it, expect } from 'vitest';

@@ -10,7 +10,7 @@
     "test:e2e": "playwright test",
     "test:e2e:ui": "playwright test --ui",
     "test:e2e:headed": "playwright test --headed",
-    "serve": "npx serve doc -p 3131"
+    "serve": "npx serve docs -p 3131"
   },
   "devDependencies": {
     "@playwright/test": "^1.49.0",

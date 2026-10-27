@@ -2,7 +2,7 @@
  * unit/hh.test.js
  *
  * Tests for the Hodgkin-Huxley model math.
- * Functions are replicated here exactly as implemented in doc/js/hh.js
+ * Functions are replicated here exactly as implemented in docs/js/hh.js
  * so tests are self-contained and remain valid even if the source is refactored.
  */
 
