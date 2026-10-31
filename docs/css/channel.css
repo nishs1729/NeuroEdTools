@@ -13,3 +13,118 @@
 .plot-group {
     padding: 10px;
 }
+
+/* ── Part tabs (built by steps.js) ───────────────────── */
+.part-tabs {
+    display: flex;
+    gap: 4px;
+    width: fit-content;
+    max-width: 100%;
+    margin: 0 auto 24px;
+    padding: 4px;
+    background: var(--card-bg);
+    border: 1px solid var(--border-color);
+    border-radius: 999px;
+    box-shadow: var(--shadow-card);
+    scroll-margin-top: 80px;
+}
+
+.part-tab {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 14px 6px 6px;
+    background: none;
+    border: 0;
+    border-radius: 999px;
+    font: inherit;
+    font-size: 0.875rem;
+    color: var(--text-muted);
+    cursor: pointer;
+    white-space: nowrap;
+    transition: background 0.15s, color 0.15s;
+}
+
+.part-tab:hover {
+    background: var(--accent-soft);
+    color: var(--text-color);
+}
+
+.part-tab[aria-selected="true"] {
+    background: var(--accent-soft);
+    color: var(--accent-color);
+    font-weight: 500;
+}
+
+.part-num {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    border: 1px solid var(--input-border-color);
+    font-size: 0.75rem;
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
+}
+
+.part-tab[aria-selected="true"] .part-num {
+    background: var(--accent-color);
+    border-color: var(--accent-color);
+    color: var(--accent-contrast);
+}
+
+/* Previous / next at the bottom of each part */
+.part-pager {
+    display: flex;
+    justify-content: space-between;
+    gap: 16px;
+    margin-top: 24px;
+}
+
+.part-pager-btn {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    min-width: 0;
+    padding: 12px 16px;
+    background: var(--card-bg);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow-card);
+    font: inherit;
+    font-weight: 600;
+    color: var(--text-color);
+    text-align: left;
+    cursor: pointer;
+    transition: border-color 0.15s;
+}
+
+.part-pager-btn:hover {
+    border-color: var(--accent-color);
+}
+
+.part-pager-btn.next {
+    margin-left: auto;
+    text-align: right;
+}
+
+.part-pager-hint {
+    font-size: 0.75rem;
+    font-weight: 500;
+    color: var(--text-muted);
+}
+
+/* Narrow screens: only the open part shows its label */
+@media (max-width: 700px) {
+    .part-tab {
+        padding: 6px;
+    }
+    .part-tab[aria-selected="true"] {
+        padding-right: 14px;
+    }
+    .part-tab:not([aria-selected="true"]) .part-label {
+        display: none;
+    }
+}

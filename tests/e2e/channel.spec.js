@@ -39,7 +39,7 @@ test.describe('Channel page — layout', () => {
     await expect(page).toHaveTitle(/Stochastic Channel/i);
   });
 
-  test('all 4 part sections are visible', async ({ page }) => {
+  test('all 4 part sections exist', async ({ page }) => {
     const sections = page.locator('.model-section');
     await expect(sections).toHaveCount(4);
   });
@@ -52,22 +52,60 @@ test.describe('Channel page — layout', () => {
   });
 
   test('Part 2 voltage slider is present', async ({ page }) => {
+    await page.locator('#part-2-tab').click();
     await expect(page.locator('#voltage_p2')).toBeVisible();
   });
 
   test('Part 3 voltage slider is present (K+ channel)', async ({ page }) => {
+    await page.locator('#part-3-tab').click();
     await expect(page.locator('#voltage_p3')).toBeVisible();
   });
 
   test('Part 4 voltage slider is present (Na+ channel)', async ({ page }) => {
+    await page.locator('#part-4-tab').click();
     await expect(page.locator('#voltage_p4')).toBeVisible();
   });
 
   test('channel state diagram images are present for all parts', async ({ page }) => {
-    await expect(page.locator('img[src*="channel1.png"]')).toBeVisible();
-    await expect(page.locator('img[src*="channel2.png"]')).toBeVisible();
-    await expect(page.locator('img[src*="channel3.png"]')).toBeVisible();
-    await expect(page.locator('img[src*="channel4.png"]')).toBeVisible();
+    for (const n of [1, 2, 3, 4]) {
+      await page.locator(`#part-${n}-tab`).click();
+      await expect(page.locator(`img[src*="channel${n}.png"]`)).toBeVisible();
+    }
+  });
+});
+
+test.describe('Channel page — part tabs', () => {
+  test('only Part 1 is shown on load', async ({ page }) => {
+    await expect(page.locator('#part-1')).toBeVisible();
+    for (const n of [2, 3, 4]) await expect(page.locator(`#part-${n}`)).toBeHidden();
+    await expect(page.locator('#part-1-tab')).toHaveAttribute('aria-selected', 'true');
+  });
+
+  test('clicking a tab shows that part and updates the URL', async ({ page }) => {
+    await page.locator('#part-3-tab').click();
+    await expect(page.locator('#part-3')).toBeVisible();
+    await expect(page.locator('#part-1')).toBeHidden();
+    await expect(page).toHaveURL(/#part-3$/);
+  });
+
+  test('Next button moves to the following part', async ({ page }) => {
+    await page.locator('#part-1 .part-pager-btn.next').click();
+    await expect(page.locator('#part-2')).toBeVisible();
+    await expect(page.locator('#part-2-tab')).toHaveAttribute('aria-selected', 'true');
+  });
+
+  test('arrow keys move between tabs', async ({ page }) => {
+    await page.locator('#part-1-tab').focus();
+    await page.keyboard.press('ArrowRight');
+    await expect(page.locator('#part-2')).toBeVisible();
+    await page.keyboard.press('ArrowLeft');
+    await expect(page.locator('#part-1')).toBeVisible();
+  });
+
+  test('a #part-N link opens that part', async ({ page }) => {
+    await page.goto('/channel.html#part-4');
+    await expect(page.locator('#part-4')).toBeVisible();
+    await expect(page.locator('#part-1')).toBeHidden();
   });
 });
 
