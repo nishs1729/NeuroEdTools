@@ -181,7 +181,8 @@
 
     // Hidden canvases (display: none) have no layout size; draw them at their base size
     const w = canvas.clientWidth || base.w;
-    const h = Math.round(w * base.h / base.w);
+    // Keep the base aspect ratio, but don't let narrow screens squash the plot flat
+    const h = Math.max(Math.round(w * base.h / base.w), Math.min(base.h, 180));
     const dpr = window.devicePixelRatio || 1;
     const bw = Math.round(w * dpr);
     const bh = Math.round(h * dpr);

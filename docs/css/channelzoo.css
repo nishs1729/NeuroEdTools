@@ -33,18 +33,5 @@
 }
 
 .main-container {
-    flex-wrap: wrap;
     margin-bottom: 40px;
-}
-
-.plots-container {
-    flex-grow: 1;
-}
-
-.plot-group {
-    max-width: 800px;
-}
-
-.plot-group canvas {
-    width: 100%; /* Fill the plot card */
 }

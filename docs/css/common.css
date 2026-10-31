@@ -200,6 +200,13 @@ input[type="range"] {
   align-items: center;
 }
 
+.img-group img {
+  display: block;
+  max-width: 100%;
+  height: auto;
+  margin: 0 auto;
+}
+
 .info-box {
   margin-top: 20px;
   padding: 16px;
@@ -208,9 +215,16 @@ input[type="range"] {
 }
 
 /* ── Tool layout: controls card beside a column of plots ── */
+#page-wrapper {
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
 .main-container {
   display: flex;
   flex-direction: row;
+  justify-content: center;
   gap: 20px;
 }
 
@@ -226,8 +240,13 @@ input[type="range"] {
 .controls img {
   display: block;
   width: 100%;
+  max-width: 420px;
   height: auto;
-  margin-top: 12px;
+  margin: 12px auto 0;
+}
+
+.controls canvas {
+  margin: 0 auto;
 }
 
 /* Control group headings: small, muted, uppercase */
@@ -279,10 +298,17 @@ input[type="range"] {
   display: flex;
   flex-direction: column;
   gap: 20px;
+  flex: 1 1 auto;
+  min-width: 0;
 }
 
 .plot-group {
   padding: 8px;
+  max-width: 820px;
+}
+
+.plot-group canvas {
+  width: 100%; /* plot.js redraws at whatever width the card gives it */
 }
 
 /* ── Site Header / Nav ─────────────────────────────── */
@@ -311,6 +337,21 @@ input[type="range"] {
   text-decoration: none;
   white-space: nowrap;
   margin-right: 8px;
+}
+
+#menu-toggle {
+  display: none;
+  order: 3;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  padding: 0;
+  background: none;
+  border: 1px solid var(--input-border-color);
+  border-radius: 999px;
+  color: var(--text-color);
+  cursor: pointer;
 }
 
 #site-header nav {
@@ -358,4 +399,78 @@ input[type="range"] {
 #theme-toggle:hover {
   background: var(--accent-soft);
   border-color: var(--accent-color);
+}
+
+/* ── Narrow screens ────────────────────────────────── */
+/* Controls move above the plots */
+@media (max-width: 1000px) {
+  .main-container {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .controls {
+    width: 100%;
+  }
+
+  .plot-group {
+    max-width: none;
+  }
+}
+
+/* Nav collapses into a menu button */
+@media (max-width: 900px) {
+  #site-header {
+    padding: 0 16px;
+    gap: 8px;
+  }
+
+  #menu-toggle {
+    display: inline-flex;
+  }
+
+  #site-header nav {
+    display: none;
+    position: absolute;
+    top: 56px;
+    left: 0;
+    right: 0;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 2px;
+    padding: 8px 12px 12px;
+    background: var(--card-bg);
+    border-bottom: 1px solid var(--border-color);
+    box-shadow: var(--shadow-card-hover);
+  }
+
+  #site-header.menu-open nav {
+    display: flex;
+  }
+
+  #site-header nav a {
+    border-radius: var(--radius-sm);
+    padding: 10px 12px;
+    font-size: 0.9375rem;
+  }
+}
+
+@media (max-width: 600px) {
+  body {
+    padding-left: 12px;
+    padding-right: 12px;
+  }
+
+  h1 {
+    font-size: 1.4rem;
+    margin: 24px 0 16px;
+  }
+
+  .controls {
+    padding: 16px;
+  }
+
+  .plot-group {
+    padding: 4px;
+  }
 }

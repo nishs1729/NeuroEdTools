@@ -1,6 +1,5 @@
 #page-wrapper {
-    width: fit-content;
-    margin: 0 auto;
+    max-width: 1560px;
 }
 
 .mode-selector {
@@ -13,29 +12,37 @@
     margin: 0;
 }
 
+/* Clamp sliders behave as direct children of .controls (keeps its gap and grid) */
+#voltage-clamp-controls {
+    display: contents;
+}
+
+/* Time-course plots on the left, voltage-dependence plots and equations on the right */
 .all-plots-container {
-    display: flex;
-    gap: 20px;
-    align-items: flex-start;
+    flex: 1 1 auto;
+    min-width: 0;
+    display: grid;
+    grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr);
+    gap: 12px 20px;
+    align-items: start;
 }
 .plots-container,
 .plots-container-right {
     display: grid;
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr);
     gap: 12px;
-}
-.plots-container {
-    flex-grow: 1;
-}
-.plots-container-right {
-    flex-shrink: 0;
 }
 
 /* Plot with its HTML legend to the right */
 .plot-group {
     display: flex;
     align-items: center;
+    max-width: none;
     padding: 4px 12px 4px 4px;
+}
+.plot-group canvas {
+    flex: 1 1 auto;
+    min-width: 0;
 }
 .legend {
     display: flex;
@@ -58,8 +65,41 @@
     background: repeating-linear-gradient(to right, var(--swatch) 0 5px, transparent 5px 8px);
 }
 
-#voltage-clamp-controls {
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
+/* Not enough room beside the plots: controls go on top, laid out in columns */
+@media (max-width: 1360px) {
+    .main-container {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    .controls {
+        width: 100%;
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+        gap: 10px 32px;
+        align-items: end;
+    }
+    .controls h2 {
+        grid-column: 1 / -1;
+    }
+}
+
+/* One plot column; legends go under each plot */
+@media (max-width: 760px) {
+    .all-plots-container {
+        grid-template-columns: minmax(0, 1fr);
+    }
+    .plot-group {
+        flex-wrap: wrap;
+        padding: 4px 4px 10px;
+    }
+    .plot-group canvas {
+        flex-basis: 100%;
+    }
+    .legend {
+        flex-direction: row;
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 6px 14px;
+        width: 100%;
+    }
 }
