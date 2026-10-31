@@ -78,11 +78,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
             function switchMode() {
                 if (modeCurrentRadio.checked) {
-                    document.getElementById('current-clamp-controls').style.display = 'flex';
+                    document.getElementById('current-clamp-controls').style.display = '';
                     document.getElementById('voltage-clamp-controls').style.display = 'none';
                 } else {
                     document.getElementById('current-clamp-controls').style.display = 'none';
-                    document.getElementById('voltage-clamp-controls').style.display = 'block';
+                    document.getElementById('voltage-clamp-controls').style.display = '';
                 }
                 runSimulation();
                 updateSteadyStatePlots();
