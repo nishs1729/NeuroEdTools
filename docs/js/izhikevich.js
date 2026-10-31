@@ -20,60 +20,6 @@ document.addEventListener('DOMContentLoaded', function () {
 
     const vuPlotCanvas = document.getElementById('v-w-plot');
     const phasePlotCanvas = document.getElementById('phase-plot');
-    const vuPlotCtx = vuPlotCanvas.getContext('2d');
-    const phasePlotCtx = phasePlotCanvas.getContext('2d');
-
-    function getCssVariable(variable) {
-        return getComputedStyle(document.documentElement).getPropertyValue(variable).trim();
-    }
-
-    function drawAxis(ctx, padding, plotWidth, plotHeight, title, xLabel, yLabel) {
-        const canvas = ctx.canvas;
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
-        ctx.fillStyle = getCssVariable('--text-color');
-        ctx.textAlign = 'center';
-        ctx.font = 'bold 16px sans-serif';
-        ctx.fillText(title, padding.left + plotWidth / 2, padding.top - 10);
-        ctx.font = '14px sans-serif';
-        ctx.fillText(xLabel, padding.left + plotWidth / 2, padding.top + plotHeight + 35);
-
-        ctx.save();
-        ctx.translate(padding.left - 50, padding.top + plotHeight / 2);
-        ctx.rotate(-Math.PI / 2);
-        ctx.fillText(yLabel, 0, 0);
-        ctx.restore();
-
-        ctx.beginPath();
-        ctx.strokeStyle = getCssVariable('--text-color');
-        ctx.lineWidth = 1;
-        ctx.moveTo(padding.left, padding.top);
-        ctx.lineTo(padding.left, padding.top + plotHeight);
-        ctx.lineTo(padding.left + plotWidth, padding.top + plotHeight);
-        ctx.stroke();
-    }
-
-    function drawXAxisTicks(ctx, duration, padding, plotWidth) {
-        ctx.textAlign = 'center';
-        ctx.fillStyle = getCssVariable('--text-color');
-        for (let i = 0; i <= 5; i++) {
-            const val = (duration / 5) * i;
-            const x = padding.left + (i / 5) * plotWidth;
-            ctx.fillText(val.toFixed(0), x, padding.top + ctx.canvas.height - padding.top - padding.bottom + 20);
-        }
-    }
-
-    function drawLegend(ctx, legends, padding) {
-        ctx.font = '12px sans-serif';
-        let x_offset = padding.left + 20;
-        legends.forEach(legend => {
-            ctx.fillStyle = getCssVariable(legend.color);
-            ctx.fillRect(x_offset, padding.top, 10, 10);
-            ctx.fillStyle = getCssVariable('--text-color');
-            ctx.textAlign = 'left';
-            ctx.fillText(legend.label, x_offset + 15, padding.top + 10);
-            x_offset += ctx.measureText(legend.label).width + 40;
-        });
-    }
 
     function simulateIzhikevich(a, b, c, d, i, duration, v_init, u_init) {
         let v = v_init;
@@ -108,159 +54,39 @@ document.addEventListener('DOMContentLoaded', function () {
         return { t_trace, v_trace, u_trace };
     }
 
-    function drawVUPlot(ctx, t_trace, v_trace, u_trace, duration) {
-        const canvas = ctx.canvas;
-        const padding = { top: 40, right: 20, bottom: 40, left: 70 };
-        const plotWidth = canvas.width - padding.left - padding.right;
-        const plotHeight = canvas.height - padding.top - padding.bottom;
-
-        drawAxis(ctx, padding, plotWidth, plotHeight, 'Membrane Potential (V) and Recovery (U)', 'Time (ms)', 'Value');
-        drawXAxisTicks(ctx, duration, padding, plotWidth);
-
-        const legends = [
-            { label: 'V', color: '--v-color' },
-            { label: 'U', color: '--u-color' }
-        ];
-        drawLegend(ctx, legends, padding);
-
-        const finite_v = v_trace.filter(isFinite);
-        const finite_u = u_trace.filter(isFinite);
-        if (finite_v.length === 0 && finite_u.length === 0) return;
-
-        const allValues = finite_v.concat(finite_u);
-        let minVal = Math.min(...allValues);
-        let maxVal = Math.max(...allValues);
-        if (minVal === maxVal) {
-            minVal -= 1;
-            maxVal += 1;
-        }
-
-        function plotTrace(trace, color) {
-            ctx.strokeStyle = getCssVariable(color);
-            ctx.beginPath();
-            ctx.lineWidth = 1.5;
-            let firstPoint = true;
-            trace.forEach((val, i) => {
-                if (!isFinite(val)) return;
-                const x = padding.left + (t_trace[i] / duration) * plotWidth;
-                const y_val = (val - minVal) / (maxVal - minVal || 1);
-                const y = padding.top + plotHeight - y_val * plotHeight;
-                if (firstPoint) {
-                    ctx.moveTo(x, y);
-                    firstPoint = false;
-                } else {
-                    ctx.lineTo(x, y);
-                }
-            });
-            ctx.stroke();
-        }
-
-        plotTrace(v_trace, '--v-color');
-        plotTrace(u_trace, '--u-color');
-
-        ctx.textAlign = 'right';
-        ctx.fillStyle = getCssVariable('--text-color');
-        for (let i = 0; i <= 4; i++) {
-            const val = minVal + (maxVal - minVal) * (i / 4);
-            const y = padding.top + plotHeight - (i / 4) * plotHeight;
-            ctx.fillText(val.toFixed(1), padding.left - 8, y + 4);
-        }
+    function drawVUPlot(t_trace, v_trace, u_trace, duration) {
+        NeuroPlot.render(vuPlotCanvas, {
+            title: 'Membrane Potential (V) and Recovery (U)', xLabel: 'Time (ms)', yLabel: 'Value',
+            x: { min: 0, max: duration },
+            series: [
+                { x: t_trace, y: v_trace, color: '--v-color', label: 'V' },
+                { x: t_trace, y: u_trace, color: '--u-color', label: 'U' },
+            ],
+        });
     }
 
-    function drawPhasePlot(ctx, v_trace, u_trace, a, b, c, d, i) {
-        const canvas = ctx.canvas;
-        const padding = { top: 40, right: 20, bottom: 40, left: 70 };
-        const plotWidth = canvas.width - padding.left - padding.right;
-        const plotHeight = canvas.height - padding.top - padding.bottom;
+    function drawPhasePlot(v_trace, u_trace, b, i) {
+        const minV = -100, maxV = 50;
+        const minU = -30, maxU = 30;
 
-        drawAxis(ctx, padding, plotWidth, plotHeight, 'Phase Portrait', 'V', 'U');
+        const v_null = [];
+        const v_nullcline = [];
+        const u_nullcline = [];
+        for (let v = minV; v <= maxV; v += 0.1) {
+            v_null.push(v);
+            v_nullcline.push(0.04 * v * v + 5 * v + 140 + i);
+            u_nullcline.push(b * v);
+        }
 
-        const legends = [
-            { label: 'Trajectory', color: '--accent-color' },
-            { label: 'V-nullcline', color: '--v-nullcline-color' },
-            { label: 'U-nullcline', color: '--u-nullcline-color' }
-        ];
-        drawLegend(ctx, legends, padding);
-
-        let minV = -100, maxV = 50; // Adjusted for Izhikevich model
-        let minU = -30, maxU = 30; // Adjusted for Izhikevich model
-
-        // Plot trajectory
-        ctx.beginPath();
-        ctx.strokeStyle = getCssVariable('--accent-color');
-        ctx.lineWidth = 1.5;
-        let firstPoint = true;
-        v_trace.forEach((v, index) => {
-            if (!isFinite(v) || !isFinite(u_trace[index])) return;
-            const u = u_trace[index];
-            const x = padding.left + ((v - minV) / (maxV - minV)) * plotWidth;
-            const y = padding.top + plotHeight - ((u - minU) / (maxU - minU)) * plotHeight;
-            if (firstPoint) {
-                ctx.moveTo(x, y);
-                firstPoint = false;
-            } else {
-                ctx.lineTo(x, y);
-            }
+        NeuroPlot.render(phasePlotCanvas, {
+            title: 'Phase Portrait', xLabel: 'V (mV)', yLabel: 'U',
+            x: { min: minV, max: maxV }, y: { min: minU, max: maxU },
+            series: [
+                { x: v_null, y: v_nullcline, color: '--v-nullcline-color', label: 'V-nullcline', width: 1.5 },
+                { x: v_null, y: u_nullcline, color: '--u-nullcline-color', label: 'U-nullcline', width: 1.5 },
+                { x: v_trace, y: u_trace, color: '--trajectory-color', label: 'Trajectory' },
+            ],
         });
-        ctx.stroke();
-
-        // Plot nullclines
-        function plotNullcline(x_coords, y_coords, color) {
-            ctx.beginPath();
-            ctx.strokeStyle = getCssVariable(color);
-            ctx.lineWidth = 1.5;
-            let last_y_in_bounds = false;
-            x_coords.forEach((v, index) => {
-                const u = y_coords[index];
-                if (!isFinite(v) || !isFinite(u)) return;
-                const x = padding.left + ((v - minV) / (maxV - minV)) * plotWidth;
-                const y = padding.top + plotHeight - ((u - minU) / (maxU - minU)) * plotHeight;
-                
-                const y_in_bounds = y >= padding.top && y <= padding.top + plotHeight;
-
-                if (y_in_bounds) {
-                    if (last_y_in_bounds) {
-                        ctx.lineTo(x, y);
-                    } else {
-                        ctx.moveTo(x, y);
-                    }
-                }
-                last_y_in_bounds = y_in_bounds;
-            });
-            ctx.stroke();
-        }
-
-        const v_nullcline_x = [];
-        const v_nullcline_y = [];
-        for (let v_val = minV; v_val <= maxV; v_val += 0.1) { // Increased resolution
-            v_nullcline_x.push(v_val);
-            v_nullcline_y.push(0.04 * v_val * v_val + 5 * v_val + 140 + i);
-        }
-        plotNullcline(v_nullcline_x, v_nullcline_y, '--v-nullcline-color');
-
-        const u_nullcline_x = [];
-        const u_nullcline_y = [];
-        for (let v_val = minV; v_val <= maxV; v_val += 0.1) {
-            u_nullcline_x.push(v_val);
-            u_nullcline_y.push(b * v_val);
-        }
-        plotNullcline(u_nullcline_x, u_nullcline_y, '--u-nullcline-color');
-
-        // Draw axes labels for phase plot
-        ctx.textAlign = 'center';
-        ctx.fillStyle = getCssVariable('--text-color');
-        for (let i_val = 0; i_val <= 4; i_val++) {
-            const val = minV + (maxV - minV) * (i_val / 4);
-            const x = padding.left + (i_val / 4) * plotWidth;
-            ctx.fillText(val.toFixed(1), x, padding.top + plotHeight + 20);
-        }
-
-        ctx.textAlign = 'right';
-        for (let i_val = 0; i_val <= 4; i_val++) {
-            const val = minU + (maxU - minU) * (i_val / 4);
-            const y = padding.top + plotHeight - (i_val / 4) * plotHeight;
-            ctx.fillText(val.toFixed(1), padding.left - 8, y + 4);
-        }
     }
 
     function plotData() {
@@ -358,11 +184,11 @@ document.addEventListener('DOMContentLoaded', function () {
 
         const { t_trace, v_trace, u_trace } = simulateIzhikevich(a, b, c, d, i, duration, v_init, u_init);
 
-        drawVUPlot(vuPlotCtx, t_trace, v_trace, u_trace, duration);
-        drawPhasePlot(phasePlotCtx, v_trace, u_trace, a, b, c, d, i);
+        drawVUPlot(t_trace, v_trace, u_trace, duration);
+        drawPhasePlot(v_trace, u_trace, b, i);
     }
 
-    [firing_pattern_select].forEach(element => {
+    [firing_pattern_select, duration_slider].forEach(element => {
         element.addEventListener('input', plotData);
     });
 
@@ -374,16 +200,4 @@ document.addEventListener('DOMContentLoaded', function () {
     });
 
     plotData();
-
-    const observer = new MutationObserver((mutations) => {
-        mutations.forEach((mutation) => {
-            if (mutation.attributeName === "data-theme") {
-                plotData();
-            }
-        });
-    });
-
-    observer.observe(document.documentElement, {
-        attributes: true
-    });
 });

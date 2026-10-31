@@ -38,9 +38,13 @@
     btn.textContent = isDark ? '☀️ Light' : '🌙 Dark';
   }
 
-  // Restore saved preference (default: light)
-  const savedDark = localStorage.getItem('neurotools-dark') === 'true';
-  applyTheme(savedDark);
+  // Restore saved preference; without one, follow the operating system setting
+  const saved = localStorage.getItem('neurotools-dark');
+  const systemDark = window.matchMedia('(prefers-color-scheme: dark)');
+  applyTheme(saved === null ? systemDark.matches : saved === 'true');
+  systemDark.addEventListener('change', function (e) {
+    if (localStorage.getItem('neurotools-dark') === null) applyTheme(e.matches);
+  });
 
   btn.addEventListener('click', function () {
     const nowDark = document.documentElement.getAttribute('data-theme') !== 'dark';

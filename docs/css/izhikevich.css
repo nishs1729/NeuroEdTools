@@ -1,11 +1,3 @@
-:root {
-    --v-color: #007BFF; /* Vibrant Blue */                  
-    --u-color: #FF7F00; /* Striking Orange */               
-    --v-nullcline-color: #66B3FF; /* Lighter Blue */        
-    --u-nullcline-color: #FFB366; /* Lighter Orange */      
-    --accent-color: #8A2BE2; /* Bold Purple for Trajectory */
-}
-
 #channels {
     display: flex;
     flex-wrap: wrap;

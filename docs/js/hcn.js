@@ -1,218 +1,4 @@
 document.addEventListener('DOMContentLoaded', () => {
-    // --- General Helper Functions (Copied from potassium.js) ---
-    function getCssVariable(variable) {
-        return getComputedStyle(document.documentElement).getPropertyValue(variable).trim();
-    }
-
-    function drawAxis(ctx, padding, plotWidth, plotHeight, title, xLabel, yLabel) {
-        const canvas = ctx.canvas;
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
-        ctx.fillStyle = getCssVariable('--text-color');
-        ctx.textAlign = 'center';
-        ctx.font = 'bold 16px sans-serif';
-        ctx.fillText(title, padding.left + plotWidth / 2, padding.top - 10);
-        ctx.font = '14px sans-serif';
-        ctx.fillText(xLabel, padding.left + plotWidth / 2, padding.top + plotHeight + 35);
-
-        ctx.save();
-        ctx.translate(padding.left - 50, padding.top + plotHeight / 2);
-        ctx.rotate(-Math.PI / 2);
-        ctx.fillText(yLabel, 0, 0);
-        ctx.restore();
-
-        ctx.beginPath();
-        ctx.strokeStyle = getCssVariable('--text-color');
-        ctx.lineWidth = 1;
-        ctx.moveTo(padding.left, padding.top);
-        ctx.lineTo(padding.left, padding.top + plotHeight);
-        ctx.lineTo(padding.left + plotWidth, padding.top + plotHeight);
-        ctx.stroke();
-    }
-
-    function drawXAxisTicks(ctx, duration, padding, plotWidth, plotHeight) {
-        ctx.textAlign = 'center';
-        ctx.fillStyle = getCssVariable('--text-color');
-        for (let i = 0; i <= 5; i++) {
-            const val = (duration / 5) * i;
-            const x = padding.left + (i / 5) * plotWidth;
-            ctx.fillText(val.toFixed(0), x, padding.top + plotHeight + 20);
-        }
-    }
-    
-    function drawIndividualChannelsPlot(ctx, traces, duration, N, title) {
-        const canvas = ctx.canvas;
-        const padding = { top: 40, right: 20, bottom: 40, left: 70 };
-        const plotWidth = canvas.width - padding.left - padding.right;
-        const plotHeight = canvas.height - padding.top - padding.bottom;
-
-        drawAxis(ctx, padding, plotWidth, plotHeight, title, 'Time (ms)', 'Channel #');
-        drawXAxisTicks(ctx, duration, padding, plotWidth, plotHeight);
-
-        ctx.strokeStyle = getCssVariable('--accent-color');
-        ctx.lineWidth = 2;
-        traces.forEach((trace, i) => {
-            const y = padding.top + (plotHeight * (i + 0.5)) / N;
-            trace.forEach(point => {
-                if (point.state === 1) {
-                    const x = padding.left + (point.t / duration) * plotWidth;
-                    ctx.beginPath();
-                    ctx.moveTo(x, y - 2);
-                    ctx.lineTo(x, y + 2);
-                    ctx.stroke();
-                }
-            });
-        });
-
-        ctx.textAlign = 'right';
-        ctx.fillStyle = getCssVariable('--text-color');
-        for (let i = 0; i < N; i++) {
-            if (N <= 20 || (i + 1) % 10 === 0 || N < 10) {
-                const y = padding.top + (plotHeight * (i + 0.5)) / N;
-                ctx.fillText(i + 1, padding.left - 8, y + 4);
-            }
-        }
-    }
-
-    function drawTotalTracePlot(ctx, traces, duration, title, yLabel) {
-        const canvas = ctx.canvas;
-        const padding = { top: 40, right: 20, bottom: 40, left: 70 };
-        const plotWidth = canvas.width - padding.left - padding.right;
-        const plotHeight = canvas.height - padding.top - padding.bottom;
-        
-        // Flatten all values from all traces to determine min/max for scaling
-        let allValues = [];
-        traces.forEach(t => allValues = allValues.concat(t.trace.map(p => p.value)));
-
-        ctx.clearRect(0, 0, canvas.width, canvas.height); // Clear canvas at the beginning
-
-        if (allValues.length === 0) {
-            // If no data, just clear and return
-            return;
-        }
-
-        let minVal = Math.min(...allValues);
-        let maxVal = Math.max(...allValues);
-        if (minVal === maxVal) {
-            minVal -= 1;
-            maxVal += 1;
-        }
-
-        drawAxis(ctx, padding, plotWidth, plotHeight, title, 'Time (ms)', yLabel);
-        drawXAxisTicks(ctx, duration, padding, plotWidth, plotHeight);
-
-        traces.forEach(t_obj => {
-            const trace = t_obj.trace;
-            const color = t_obj.color;
-            ctx.beginPath();
-            ctx.strokeStyle = getCssVariable(color);
-            ctx.lineWidth = 1.5;
-            trace.forEach((point, i) => {
-                const x = padding.left + (point.t / duration) * plotWidth;
-                const y_val = (point.value - minVal) / (maxVal - minVal || 1);
-                const y = padding.top + plotHeight - y_val * plotHeight;
-                if (i === 0) ctx.moveTo(x, y);
-                else ctx.lineTo(x, y);
-            });
-            ctx.stroke();
-        });
-
-        ctx.textAlign = 'right';
-        ctx.fillStyle = getCssVariable('--text-color');
-        for (let i = 0; i <= 4; i++) {
-            const val = minVal + (maxVal - minVal) * (i / 4);
-            const y = padding.top + plotHeight - (i / 4) * plotHeight;
-            ctx.fillText(val.toFixed(yLabel.includes('(pA)') ? 1 : 0), padding.left - 8, y + 4);
-        }
-    }
-    
-    function drawAlphaBetaPlot(ctx, alphaFn, betaFn, color1, color2, label1, label2, rateMax, currentV = null) {
-        const canvas = ctx.canvas;
-        const padding = { top: 20, right: 15, bottom: 40, left: 45 };
-        const plotWidth = canvas.width - padding.left - padding.right;
-        const plotHeight = canvas.height - padding.top - padding.bottom;
-
-        const vMin = -100, vMax = 100;
-        const rateMin = 0;
-
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
-        ctx.fillStyle = getCssVariable('--text-color');
-        ctx.textAlign = 'center';
-        ctx.font = 'bold 12px sans-serif';
-        ctx.fillText('Voltage (mV)', padding.left + plotWidth / 2, padding.top + plotHeight + 30);
-        
-        ctx.save();
-        ctx.translate(padding.left - 35, padding.top + plotHeight / 2);
-        ctx.rotate(-Math.PI / 2);
-        ctx.fillText('Rate', 0, 0);
-        ctx.restore();
-
-        ctx.beginPath();
-        ctx.strokeStyle = getCssVariable('--text-color');
-        ctx.lineWidth = 1;
-        ctx.moveTo(padding.left, padding.top + plotHeight);
-        ctx.lineTo(padding.left + plotWidth, padding.top + plotHeight);
-        ctx.moveTo(padding.left, padding.top);
-        ctx.lineTo(padding.left, padding.top + plotHeight);
-        ctx.stroke();
-
-        const alphaPoints = [];
-        const betaPoints = [];
-        for (let v = vMin; v <= vMax; v += 2) {
-            alphaPoints.push({v, rate: alphaFn(v)});
-            betaPoints.push({v, rate: betaFn(v)});
-        }
-
-        function plotCurve(points, color) {
-            ctx.beginPath();
-            ctx.strokeStyle = color;
-            ctx.lineWidth = 2;
-            points.forEach((p, i) => {
-                const x = padding.left + ((p.v - vMin) / (vMax - vMin)) * plotWidth;
-                const y = padding.top + plotHeight - ((p.rate - rateMin) / (rateMax - rateMin)) * plotHeight;
-                if (i === 0) ctx.moveTo(x, y);
-                else ctx.lineTo(x, y);
-            });
-            ctx.stroke();
-        }
-
-        plotCurve(alphaPoints, getCssVariable(color1));
-        plotCurve(betaPoints, getCssVariable(color2));
-
-        ctx.font = 'bold 12px sans-serif';
-        ctx.fillStyle = getCssVariable(color1);
-        ctx.fillText(label1, padding.left + plotWidth - 10, padding.top + 10);
-        ctx.fillStyle = getCssVariable(color2);
-        ctx.fillText(label2, padding.left + plotWidth - 10, padding.top + 25);
-        
-        ctx.textAlign = 'right';
-        ctx.fillStyle = getCssVariable('--text-color');
-        ctx.font = '10px sans-serif';
-        for (let i = 0; i <= 2; i++) {
-            const val = rateMin + (rateMax - rateMin) * (i / 2);
-            const y = padding.top + plotHeight - (i / 2) * plotHeight;
-            ctx.fillText(val.toFixed(2), padding.left - 5, y + 3);
-        }
-
-        ctx.textAlign = 'center';
-        for (let i = 0; i <= 4; i++) {
-            const val = vMin + (vMax - vMin) * (i / 4);
-            const x = padding.left + (plotWidth * i / 4);
-            ctx.fillText(val.toFixed(0), x, padding.top + plotHeight + 15);
-        }
-
-        if (currentV !== null) {
-            const x = padding.left + ((currentV - vMin) / (vMax - vMin)) * plotWidth;
-            ctx.beginPath();
-            ctx.strokeStyle = getCssVariable('--text-color');
-            ctx.lineWidth = 1;
-            ctx.setLineDash([2, 2]);
-            ctx.moveTo(x, padding.top);
-            ctx.lineTo(x, padding.top + plotHeight);
-            ctx.stroke();
-            ctx.setLineDash([]);
-        }
-    }
-    
     // --- Hodgkin-Huxley Rate Functions (Updated from jnk/pot.md) ---
     const HH = {
         alpha_n: V => {
@@ -247,10 +33,10 @@ document.addEventListener('DOMContentLoaded', () => {
             numChannels: document.getElementById('num_channels_hcn-value'),
             duration: document.getElementById('duration_hcn-value'),
         },
-        individualCtx: document.getElementById('individual-plot-hcn').getContext('2d'),
-        openChannelsCtx: document.getElementById('open-channels-plot-hcn').getContext('2d'),
-        totalCtx: document.getElementById('total-plot-hcn').getContext('2d'),
-        abPlotCtx: document.getElementById('ab_plot_hcn').getContext('2d'),
+        individualCanvas: document.getElementById('individual-plot-hcn'),
+        openChannelsCanvas: document.getElementById('open-channels-plot-hcn'),
+        totalCanvas: document.getElementById('total-plot-hcn'),
+        abPlotCanvas: document.getElementById('ab_plot_hcn'),
         E_h: -35.0, // Reversal potential (mV)
         g_HCN_max: 0.5, // Maximum HCN conductance (mS/cm^2)
         g_HCN_single: 0.005, // Single channel conductance (pS), scaled for N=100 to match g_HCN_max
@@ -297,7 +83,7 @@ document.addEventListener('DOMContentLoaded', () => {
             for (const key in this.sliders) { this.values[key].textContent = this.sliders[key].value; }
             const V = parseFloat(this.sliders.voltage.value);
             // For HCN, we only have one activation gate (m_h)
-            drawAlphaBetaPlot(this.abPlotCtx, this.alpha_mh.bind(this), this.beta_mh.bind(this), '--alpha-m-color', '--beta-m-color', 'αmh', 'βmh', 1, V);
+            ChannelPlots.rates(this.abPlotCanvas, this.alpha_mh.bind(this), this.beta_mh.bind(this), '--alpha-m-color', '--beta-m-color', 'α_{mh}', 'β_{mh}', 1, V);
         },
         runSimulation() {
             const N = parseInt(this.sliders.numChannels.value);
@@ -332,7 +118,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 openChannelsTrace.push({ t, value: openCount });
                 totalCurrentTrace.push({ t, value: totalCurrent });
             }
-            drawIndividualChannelsPlot(this.individualCtx, individualTraces, duration, N, 'Individual Channel Activity (Stochastic)');
+            ChannelPlots.raster(this.individualCanvas, individualTraces, duration, 'Individual Channel Activity');
             
             // ODE Simulation (RK4)
             const openChannelsTraceODE = [];
@@ -362,17 +148,23 @@ document.addEventListener('DOMContentLoaded', () => {
 
             // Combine stochastic and ODE open channels for plotting
             const combinedOpenChannelsTraces = [
-                { trace: openChannelsTrace, color: '--open-channel-color' },
-                { trace: openChannelsTraceODE, color: '--ode-color' }
+                { trace: openChannelsTrace, color: '--open-channel-color', label: 'Stochastic' },
+                { trace: openChannelsTraceODE, color: '--ode-color', label: 'ODE', dash: [6, 4] }
             ];
-            drawTotalTracePlot(this.openChannelsCtx, combinedOpenChannelsTraces, duration, 'Open Channels (Stochastic and ODE models)', '# Open');
+            ChannelPlots.traces(this.openChannelsCanvas, {
+                title: 'Open Channels', yLabel: 'Open channels', duration, integer: true,
+                series: combinedOpenChannelsTraces,
+            });
 
             // Combine stochastic and ODE total current for plotting
             const combinedTotalCurrentTraces = [
-                { trace: totalCurrentTrace, color: '--current-color' },
-                { trace: totalCurrentTraceODE, color: '--ode-color' }
+                { trace: totalCurrentTrace, color: '--current-color', label: 'Stochastic' },
+                { trace: totalCurrentTraceODE, color: '--ode-color', label: 'ODE', dash: [6, 4] }
             ];
-            drawTotalTracePlot(this.totalCtx, combinedTotalCurrentTraces, duration, 'Total HCN Current (Stochastic and ODE models)', 'Current (pA)');
+            ChannelPlots.traces(this.totalCanvas, {
+                title: 'Total HCN Current', yLabel: 'I (pA)', duration,
+                series: combinedTotalCurrentTraces,
+            });
         }
     };
 
@@ -392,20 +184,4 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
     }
-
-    const observer = new MutationObserver((mutations) => {
-        mutations.forEach((mutation) => {
-            if (mutation.attributeName === "data-theme") {
-                const container = document.getElementById('hcn-container');
-                if (container && container.style.display !== 'none') {
-                    sim_hcn.runSimulation();
-                    sim_hcn.updateSliderValues();
-                }
-            }
-        });
-    });
-
-    observer.observe(document.documentElement, {
-        attributes: true
-    });
 });

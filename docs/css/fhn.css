@@ -1,11 +1,3 @@
-:root {
-    --v-color: #E41A1C;
-    --w-color: #377EB8;
-    --v-nullcline-color: #FDB462;
-    --w-nullcline-color: #4DAF4A;
-    --accent-color: #984EA3;
-}
-
 #channels {
     display: flex;
     flex-wrap: wrap;

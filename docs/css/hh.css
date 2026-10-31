@@ -78,8 +78,13 @@ input[type="range"] {
     font-size: 0.9em;
 }
 .legend-color {
-    width: 15px;
-    height: 15px;
+    width: 16px;
+    height: 3px;
+    border-radius: 2px;
+    background: var(--swatch);
+}
+.legend-color.dashed {
+    background: repeating-linear-gradient(to right, var(--swatch) 0 5px, transparent 5px 8px);
 }
 .info-box {
     margin-top: 20px;
@@ -90,9 +95,4 @@ input[type="range"] {
 #page-wrapper {
     width: fit-content;
     margin: 0 auto;
-}
-
-/* Canvas text and lines */
-[data-theme="dark"] canvas {
-    filter: invert(1) hue-rotate(180deg); /* Invert colors for canvas content */
 }

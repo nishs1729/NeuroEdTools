@@ -33,14 +33,14 @@ document.addEventListener('DOMContentLoaded', () => {
                 eL: document.getElementById('eL-value'),
             };
 
-            // Canvases and contexts
+            // Canvases and their HTML legends
             const plots = {
-                v: { ctx: document.getElementById('plot-v').getContext('2d'), legend: document.getElementById('legend-v') },
-                gating: { ctx: document.getElementById('plot-gating').getContext('2d'), legend: document.getElementById('legend-gating') },
-                conductances: { ctx: document.getElementById('plot-conductances').getContext('2d'), legend: document.getElementById('legend-conductances') },
-                currents: { ctx: document.getElementById('plot-currents').getContext('2d'), legend: document.getElementById('legend-currents') },
-                steadyState: { ctx: document.getElementById('plot-steady-state').getContext('2d'), legend: document.getElementById('legend-steady-state') },
-                timeConstants: { ctx: document.getElementById('plot-time-constants').getContext('2d'), legend: document.getElementById('legend-time-constants') },
+                v: { canvas: document.getElementById('plot-v'), legend: document.getElementById('legend-v') },
+                gating: { canvas: document.getElementById('plot-gating'), legend: document.getElementById('legend-gating') },
+                conductances: { canvas: document.getElementById('plot-conductances'), legend: document.getElementById('legend-conductances') },
+                currents: { canvas: document.getElementById('plot-currents'), legend: document.getElementById('legend-currents') },
+                steadyState: { canvas: document.getElementById('plot-steady-state'), legend: document.getElementById('legend-steady-state') },
+                timeConstants: { canvas: document.getElementById('plot-time-constants'), legend: document.getElementById('legend-time-constants') },
             };
 
             function updateSteadyStatePlots() {
@@ -151,8 +151,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
                 const dt = 0.01;
                 const results = [];
-                let minCalculatedIinj = Infinity;
-                let maxCalculatedIinj = -Infinity;
 
                 for (let t = 0; t <= tSim; t += dt) {
                     const V = (t >= tStart && t <= tEnd) ? vClamp : vHold;
@@ -164,21 +162,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
                     const calculated_i_inj = dV * Cm;
                     results.push({ t, V, m, h, n, gNa, gK, INa, IK, IL, i_inj: calculated_i_inj, totalCurrent: INa + IK + IL });
-
-                    if (calculated_i_inj < minCalculatedIinj) minCalculatedIinj = calculated_i_inj;
-                    if (calculated_i_inj > maxCalculatedIinj) maxCalculatedIinj = calculated_i_inj;
                 }
-                // Handle case where min/max are still Infinity/-Infinity (e.g., no data)
-                if (minCalculatedIinj === Infinity) minCalculatedIinj = -1; // Default or sensible value
-                if (maxCalculatedIinj === -Infinity) maxCalculatedIinj = 1; // Default or sensible value
-
-                // Add a small buffer if min and max are the same
-                if (minCalculatedIinj === maxCalculatedIinj) {
-                    minCalculatedIinj -= 1;
-                    maxCalculatedIinj += 1;
-                }
-
-                plotResults(results, tSim, minCalculatedIinj, maxCalculatedIinj);
+                plotResults(results, tSim);
             }
 
             function getAlphaBeta(V) {
@@ -209,203 +194,46 @@ document.addEventListener('DOMContentLoaded', () => {
                 return { dV: dV / Cm, dm, dh, dn, gNa, gK, INa, IK, IL };
             }
 
-            function plotResults(results, t_max, minIinjRange = null, maxIinjRange = null) {
-                drawPlot(plots.v.ctx, plots.v.legend, results,
-                    [{ key: 'V', color: '#007bff', label: 'V' }], 'Membrane Potential', 'Time (ms)', 'mV', t_max, 't',
-                    [{ key: 'i_inj', color: '#00cc7b', label: 'I_inj' }], 'uA/cm^2', minIinjRange, maxIinjRange
-                );
-                drawPlot(plots.gating.ctx, plots.gating.legend, results, [
-                    { key: 'm', color: 'red', label: 'm' },
-                    { key: 'h', color: 'green', label: 'h' },
-                    { key: 'n', color: 'blue', label: 'n' }
-                ], 'Gating Variables', 'Time (ms)', 'Probability', t_max, 't');
-                drawPlot(plots.conductances.ctx, plots.conductances.legend, results, [
-                    { key: 'gNa', color: 'orange', label: 'g_Na' },
-                    { key: 'gK', color: 'purple', label: 'g_K' }
-                ], 'Conductances', 'Time (ms)', 'mS/cm^2', t_max, 't');
-                drawPlot(plots.currents.ctx, plots.currents.legend, results, [
-                    { key: 'INa', color: 'cyan', label: 'I_Na' },
-                    { key: 'IK', color: 'magenta', label: 'I_K' },
-                    { key: 'IL', color: 'brown', label: 'I_L' },
-                    { key: 'totalCurrent', color: 'black', label: 'I_total' }
-                ], 'Ionic Currents', 'Time (ms)', 'uA/cm^2', t_max, 't');
-            }
+            function plotResults(results, t_max, minIinjRange, maxIinjRange) {
+                const t = results.map(r => r.t);
+                const col = key => results.map(r => r[key]);
+                const x = { min: 0, max: t_max };
 
-            function drawPlot(ctx, legendEl, results, primaryPlots, title, xLabel, primaryYLabel, x_max, x_key, secondaryPlots = [], secondaryYLabel = '', minSecondaryY = null, maxSecondaryY = null, voltageLine = null) {
-                const canvas = ctx.canvas;
-                ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-                const paddingLeft = 60;
-                const paddingRight = 55; // Increased for secondary Y-axis
-                const paddingTop = 30;
-                const paddingBottom = 40;
-
-                // Calculate min/max for primary Y-axis
-                const allPrimaryData = primaryPlots.flatMap(p => results.map(r => r[p.key]));
-                let maxVal1 = Math.max(...allPrimaryData);
-                let minVal1 = Math.min(...allPrimaryData);
-                if (maxVal1 === minVal1) { maxVal1 += 1; minVal1 -= 1; }
-
-                // Calculate min/max for secondary Y-axis
-                let minVal2, maxVal2;
-                if (minSecondaryY !== null && maxSecondaryY !== null) {
-                    minVal2 = minSecondaryY;
-                    maxVal2 = maxSecondaryY;
-                } else {
-                    const allSecondaryData = secondaryPlots.flatMap(p => results.map(r => r[p.key]));
-                    maxVal2 = Math.max(...allSecondaryData);
-                    minVal2 = Math.min(...allSecondaryData);
-                    if (maxVal2 === minVal2) { maxVal2 += 1; minVal2 -= 1; }
-                }
-
-                // Draw Title
-                ctx.fillStyle = '#333';
-                ctx.textAlign = 'center';
-                ctx.font = 'bold 16px sans-serif';
-                ctx.fillText(title, canvas.width / 2, paddingTop / 2 + 5); // Adjusted Y position for title
-
-                // Draw Axes
-                ctx.beginPath();
-                ctx.strokeStyle = '#333';
-                ctx.lineWidth = 1;
-                // Primary Y-axis
-                ctx.moveTo(paddingLeft, paddingTop);
-                ctx.lineTo(paddingLeft, canvas.height - paddingBottom);
-                // X-axis
-                ctx.lineTo(canvas.width - paddingRight, canvas.height - paddingBottom);
-                // Secondary Y-axis
-                if (secondaryPlots.length > 0) {
-                    ctx.moveTo(canvas.width - paddingRight, canvas.height - paddingBottom);
-                    ctx.lineTo(canvas.width - paddingRight, paddingTop);
-                }
-                ctx.stroke();
-
-                // Draw Labels and Ticks
-                ctx.fillStyle = '#333';
-                ctx.textAlign = 'center';
-                ctx.font = 'bold 14px sans-serif';
-                ctx.fillText(xLabel, paddingLeft + (canvas.width - paddingLeft - paddingRight) / 2, canvas.height - paddingBottom + 35);
-
-                // Primary Y-axis label
-                ctx.save();
-                ctx.translate(paddingLeft / 2 - 10, paddingTop + (canvas.height - paddingTop - paddingBottom) / 2);
-                ctx.rotate(-Math.PI / 2);
-                ctx.fillText(primaryYLabel, 0, 0);
-                ctx.restore();
-
-                // Secondary Y-axis label
-                if (secondaryPlots.length > 0) {
-                    ctx.save();
-                    ctx.translate(canvas.width - paddingRight / 2 + 10, paddingTop + (canvas.height - paddingTop - paddingBottom) / 2);
-                    ctx.rotate(Math.PI / 2);
-                    ctx.fillText(secondaryYLabel, 0, 0);
-                    ctx.restore();
-                }
-
-                ctx.font = '14px sans-serif';
-                const x_min = results.length > 0 ? results[0][x_key] : 0;
-                const x_range = x_max - x_min;
-                const plotWidth = canvas.width - paddingLeft - paddingRight;
-                const plotHeight = canvas.height - paddingTop - paddingBottom;
-
-                // Primary Y-axis ticks
-                ctx.textAlign = 'right';
-                for (let i = 0; i <= 4; i++) {
-                    const val = minVal1 + (maxVal1 - minVal1) * (i / 4);
-                    const y = canvas.height - paddingBottom - (i / 4) * plotHeight;
-                    ctx.fillText(val.toFixed(1), paddingLeft - 5, y + 5);
-                    ctx.beginPath();
-                    ctx.moveTo(paddingLeft, y);
-                    ctx.lineTo(paddingLeft + 5, y);
-                    ctx.stroke();
-                }
-
-                // Secondary Y-axis ticks
-                if (secondaryPlots.length > 0) {
-                    ctx.textAlign = 'left';
-                    for (let i = 0; i <= 4; i++) {
-                        const val = minVal2 + (maxVal2 - minVal2) * (i / 4);
-                        const y = canvas.height - paddingBottom - (i / 4) * plotHeight;
-                        ctx.fillText(val.toFixed(1), canvas.width - paddingRight + 5, y + 5);
-                        ctx.beginPath();
-                        ctx.moveTo(canvas.width - paddingRight, y);
-                        ctx.lineTo(canvas.width - paddingRight - 5, y);
-                        ctx.stroke();
-                    }
-                }
-
-                // X-axis ticks
-                ctx.textAlign = 'center';
-                for (let i = 0; i <= 5; i++) {
-                    const val = x_min + (x_range / 5) * i;
-                    const x = paddingLeft + (i / 5) * plotWidth;
-                    ctx.fillText(val.toFixed(0), x, canvas.height - paddingBottom + 15);
-                    ctx.beginPath();
-                    ctx.moveTo(x, canvas.height - paddingBottom);
-                    ctx.lineTo(x, canvas.height - paddingBottom - 5);
-                    ctx.stroke();
-                }
-
-                // Draw Primary Plots
-                primaryPlots.forEach(plot => {
-                    ctx.beginPath();
-                    ctx.strokeStyle = plot.color;
-                    ctx.lineWidth = 1.5;
-                    let firstPoint = true;
-                    results.forEach(point => {
-                        const x = paddingLeft + ((point[x_key] - x_min) / x_range) * plotWidth;
-                        const y = (canvas.height - paddingBottom) - ((point[plot.key] - minVal1) / (maxVal1 - minVal1)) * plotHeight;
-                        if (firstPoint) {
-                            ctx.moveTo(x, y);
-                            firstPoint = false;
-                        } else {
-                            ctx.lineTo(x, y);
-                        }
-                    });
-                    ctx.stroke();
+                NeuroPlot.render(plots.v.canvas, {
+                    title: 'Membrane Potential', xLabel: 'Time (ms)', yLabel: 'V (mV)', y2Label: 'I_{inj} (µA/cm²)',
+                    x, y2: { min: minIinjRange, max: maxIinjRange }, legend: plots.v.legend,
+                    series: [
+                        { x: t, y: col('V'), color: '--v-color', label: 'V' },
+                        { x: t, y: col('i_inj'), color: '--iinj-color', label: 'I_{inj}', axis: 'y2', width: 1.25 },
+                    ],
                 });
-
-                // Draw Secondary Plots
-                secondaryPlots.forEach(plot => {
-                    ctx.beginPath();
-                    ctx.strokeStyle = plot.color;
-                    ctx.lineWidth = 1.5;
-                    let firstPoint = true;
-                    results.forEach(point => {
-                        const x = paddingLeft + ((point[x_key] - x_min) / x_range) * plotWidth;
-                        const y = (canvas.height - paddingBottom) - ((point[plot.key] - minVal2) / (maxVal2 - minVal2)) * plotHeight;
-                        if (firstPoint) {
-                            ctx.moveTo(x, y);
-                            firstPoint = false;
-                        } else {
-                            ctx.lineTo(x, y);
-                        }
-                    });
-                    ctx.stroke();
+                NeuroPlot.render(plots.gating.canvas, {
+                    title: 'Gating Variables', xLabel: 'Time (ms)', yLabel: 'Probability',
+                    x, y: { min: 0, max: 1 }, legend: plots.gating.legend,
+                    series: [
+                        { x: t, y: col('m'), color: '--m-color', label: 'm' },
+                        { x: t, y: col('h'), color: '--h-color', label: 'h' },
+                        { x: t, y: col('n'), color: '--n-color', label: 'n' },
+                    ],
                 });
-
-                // Draw Legend
-                legendEl.innerHTML = [...primaryPlots, ...secondaryPlots].map(p => `
-                    <div class="legend-item">
-                        <div class="legend-color" style="background-color: ${p.color}"></div>
-                        <span>${p.label}</span>
-                    </div>
-                `).join('');
-
-                // Draw vertical line for clamp voltage
-                if (voltageLine !== null && x_key === 'v') {
-                    const x = paddingLeft + ((voltageLine - x_min) / x_range) * plotWidth;
-                    if (x >= paddingLeft && x <= canvas.width - paddingRight) {
-                        ctx.beginPath();
-                        ctx.strokeStyle = '#333';
-                        ctx.lineWidth = 1;
-                        ctx.setLineDash([2, 2]);
-                        ctx.moveTo(x, paddingTop);
-                        ctx.lineTo(x, canvas.height - paddingBottom);
-                        ctx.stroke();
-                        ctx.setLineDash([]);
-                    }
-                }
+                NeuroPlot.render(plots.conductances.canvas, {
+                    title: 'Conductances', xLabel: 'Time (ms)', yLabel: 'g (mS/cm²)',
+                    x, y: { min: 0 }, legend: plots.conductances.legend,
+                    series: [
+                        { x: t, y: col('gNa'), color: '--na-color', label: 'g_{Na}' },
+                        { x: t, y: col('gK'), color: '--k-color', label: 'g_{K}' },
+                    ],
+                });
+                NeuroPlot.render(plots.currents.canvas, {
+                    title: 'Ionic Currents', xLabel: 'Time (ms)', yLabel: 'I (µA/cm²)',
+                    x, legend: plots.currents.legend,
+                    series: [
+                        { x: t, y: col('INa'), color: '--na-color', label: 'I_{Na}' },
+                        { x: t, y: col('IK'), color: '--k-color', label: 'I_{K}' },
+                        { x: t, y: col('IL'), color: '--leak-color', label: 'I_{L}' },
+                        { x: t, y: col('totalCurrent'), color: '--total-color', label: 'I_{total}', dash: [5, 3] },
+                    ],
+                });
             }
 
             function calculateAndDrawSteadyStatePlots(voltageLine = null) {
@@ -428,17 +256,23 @@ document.addEventListener('DOMContentLoaded', () => {
                     timeConstantResults.push({ v, m: tau_m, h: tau_h, n: tau_n });
                 }
 
-                drawPlot(plots.steadyState.ctx, plots.steadyState.legend, steadyStateResults, [
-                    { key: 'm', color: 'red', label: 'm_&infin;' },
-                    { key: 'h', color: 'green', label: 'h_&infin;' },
-                    { key: 'n', color: 'blue', label: 'n_&infin;' }
-                ], 'Steady-State Gating Vars', 'Voltage (mV)', 'Probability', v_max, 'v', [], '', null, null, voltageLine);
+                const v = steadyStateResults.map(r => r.v);
+                const gates = (rows, prefix, suffix) => ['m', 'h', 'n'].map(g => ({
+                    x: v, y: rows.map(r => r[g]), color: `--${g}-color`, label: prefix + g + suffix,
+                }));
+                const x = { min: v_min, max: v_max };
+                const vlines = [{ x: voltageLine }];
 
-                drawPlot(plots.timeConstants.ctx, plots.timeConstants.legend, timeConstantResults, [
-                    { key: 'm', color: 'red', label: '&tau;_m' },
-                    { key: 'h', color: 'green', label: '&tau;_h' },
-                    { key: 'n', color: 'blue', label: '&tau;_n' }
-                ], 'Gating Time Constants', 'Voltage (mV)', 'Time (ms)', v_max, 'v', [], '', null, null, voltageLine);
+                NeuroPlot.render(plots.steadyState.canvas, {
+                    title: 'Steady-State Gating', xLabel: 'Voltage (mV)', yLabel: 'Probability',
+                    x, y: { min: 0, max: 1 }, vlines, legend: plots.steadyState.legend,
+                    series: gates(steadyStateResults, '', '_∞'),
+                });
+                NeuroPlot.render(plots.timeConstants.canvas, {
+                    title: 'Gating Time Constants', xLabel: 'Voltage (mV)', yLabel: 'τ (ms)',
+                    x, y: { min: 0 }, vlines, legend: plots.timeConstants.legend,
+                    series: gates(timeConstantResults, 'τ_', ''),
+                });
             }
 
             // Initial run

@@ -12,43 +12,77 @@
   --box-shadow-light: 0 0 10px rgba(0, 0, 0, 0.1);
   --tool-card-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
   --tool-card-shadow-hover: 0 8px 20px rgba(0, 0, 0, 0.12);
-  --alpha-m-color: #28a745;
-  --beta-m-color: #6f42c1;
-  --alpha-h-color: #fd7e14;
-  --beta-h-color: #20c997;
-  --open-channel-color: #28a745;
-  --current-color: #6f42c1;
-  --ode-color: #007bff; /* A distinct blue for ODE plots */
-  --v-color: #007bff;
-  --u-color: #e83e8c;
-  --v-nullcline-color: #28a745;
-  --u-nullcline-color: #fd7e14;
+  /* Plot chrome */
+  --plot-text: #2b2f36;
+  --plot-muted: #5f6672;
+  --plot-axis: #9aa1ab;
+  --plot-grid: rgba(0, 0, 0, 0.07);
+  /* Plot series — colour-blind-friendly (Okabe–Ito based) */
+  --v-color: #0072b2;
+  --w-color: #d55e00;
+  --u-color: #d55e00;
+  --iinj-color: #009e73;
+  --m-color: #d55e00;
+  --h-color: #009e73;
+  --n-color: #0072b2;
+  --na-color: #d55e00;
+  --k-color: #0072b2;
+  --leak-color: #009e73;
+  --total-color: #2b2f36;
+  --trajectory-color: #7a3fa0;
+  --v-nullcline-color: #009e73;
+  --w-nullcline-color: #e69f00;
+  --u-nullcline-color: #e69f00;
+  --raster-color: #0072b2;
+  --open-channel-color: #009e73;
+  --current-color: #7a3fa0;
+  --ode-color: #d55e00;
+  --alpha-m-color: #009e73;
+  --beta-m-color: #7a3fa0;
+  --alpha-h-color: #e69f00;
+  --beta-h-color: #56b4e9;
 }
 
 [data-theme="dark"] {
-  --bg: #000000;
-  --card-bg: #1e1e1e;
+  --bg: #0f1115;
+  --card-bg: #1a1d23;
   --text-color: #fff;
   --controls-h2: #5dce70;
   --input-bg: #333;
   --input-border-color: #555;
   --header-border: #555;
-  --header-bg: rgba(0, 0, 0, 0.85);
+  --header-bg: rgba(15, 17, 21, 0.85);
   --info-box-bg: #1c2a3a;
   --box-shadow-dark: 0 0 10px rgba(0, 0, 0, 0.3);
   --tool-card-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
   --tool-card-shadow-hover: 0 8px 20px rgba(0, 0, 0, 0.4);
-  --alpha-m-color: #1e7e34;
-  --beta-m-color: #5a37a0;
-  --alpha-h-color: #c7640f;
-  --beta-h-color: #199d7c;
-  --open-channel-color: #38c172;
-  --current-color: #9b6dff;
-  --ode-color: #66b3ff;
-  --v-color: #66b3ff;
-  --u-color: #ff6ec7;
-  --v-nullcline-color: #38c172;
-  --u-nullcline-color: #ffab56;
+  --plot-text: #e6e8eb;
+  --plot-muted: #a3aab4;
+  --plot-axis: #5c636e;
+  --plot-grid: rgba(255, 255, 255, 0.07);
+  --v-color: #56b4e9;
+  --w-color: #ff8c42;
+  --u-color: #ff8c42;
+  --iinj-color: #3ddc97;
+  --m-color: #ff8c42;
+  --h-color: #3ddc97;
+  --n-color: #56b4e9;
+  --na-color: #ff8c42;
+  --k-color: #56b4e9;
+  --leak-color: #3ddc97;
+  --total-color: #e6e8eb;
+  --trajectory-color: #c49bff;
+  --v-nullcline-color: #3ddc97;
+  --w-nullcline-color: #f5c040;
+  --u-nullcline-color: #f5c040;
+  --raster-color: #56b4e9;
+  --open-channel-color: #3ddc97;
+  --current-color: #c49bff;
+  --ode-color: #ff8c42;
+  --alpha-m-color: #3ddc97;
+  --beta-m-color: #c49bff;
+  --alpha-h-color: #f5c040;
+  --beta-h-color: #7fd0ff;
 }
 
 * {
@@ -65,6 +99,14 @@ body {
   display: flex;
   flex-direction: column;
   align-items: center;
+}
+
+/* Plots: plot.js sets --plot-w to the canvas's logical width; page CSS may override */
+canvas {
+  display: block;
+  width: var(--plot-w, auto);
+  max-width: 100%;
+  height: auto;
 }
 
 input,
@@ -178,8 +220,10 @@ input[type=range] {
     background: var(--accent-color);
 }
 
+/* Invert black-on-white equation images; screen blending drops their (now black) background */
 [data-theme="dark"] img {
-    filter: invert(88.3%);
+    filter: invert(1) brightness(0.9);
+    mix-blend-mode: screen;
 }
 
 /* ── Site Header / Nav ─────────────────────────────── */

@@ -2,7 +2,7 @@
 
 Interactive, browser-based simulators for teaching how neurons and ion channels work.
 
-Each tool runs a model of neuronal dynamics in the browser and plots the results as you move the sliders, so students can build intuition by changing parameters and watching what happens. 
+Each tool runs a model of neuronal dynamics in the browser and plots the results as you move the sliders, so students can build intuition by changing parameters and watching what happens.
 
 ## The tools
 
@@ -35,7 +35,8 @@ Opening `docs/index.html` directly from disk can also work, but some browsers re
 docs/               The website (can be published as-is, e.g. with GitHub Pages)
   index.html        Landing page linking to each tool
   *.html            One page per tool
-  js/               Simulation and plotting code (one file per tool, plus header.js)
+  js/               One simulation file per tool, plus shared code: header.js (nav, theme),
+                    plot.js (all canvas plotting), channel-plots.js (stochastic-channel plots)
   css/              Shared styles (common.css, tools.css) and per-tool styles
   assets/images/    Model equations and channel state diagrams
 tests/

@@ -79,7 +79,3 @@ input[type="range"] {
     box-shadow: var(--box-shadow-light);
     padding: 10px;
 }
-
-[data-theme="dark"] img {
-    filter: invert(88.2%);
-}
