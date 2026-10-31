@@ -1,27 +1,41 @@
 /**
  * header.js — injects the shared site navigation header and handles theme toggling.
- * Include this script with <script src="js/header.js"></script> in every page's <head>
- * (or early in <body>) so the header renders before page content.
+ * Include it as the first element of every page's <body>, and js/theme.js in <head>
+ * so the saved theme is applied before the first paint.
  */
 (function () {
   // ── 1. Inject header HTML ─────────────────────────────────────────────────
   const header = document.createElement('header');
   header.id = 'site-header';
   header.innerHTML = `
+    <a class="skip-link" href="#main-content">Skip to content</a>
     <a class="site-logo" href="index.html">NeuroEdTools</a>
     <button id="menu-toggle" aria-label="Open menu" aria-expanded="false" aria-controls="site-nav">
       <svg width="20" height="20" viewBox="0 0 20 20" aria-hidden="true"><path d="M3 5h14M3 10h14M3 15h14" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
     </button>
-    <nav id="site-nav">
-      <a href="hh.html">Hodgkin-Huxley</a>
+    <nav id="site-nav" aria-label="Tools">
       <a href="channel.html">Stochastic Channels</a>
       <a href="channelzoo.html">Channel Zoo</a>
+      <a href="hh.html">Hodgkin-Huxley</a>
       <a href="fhn.html">FitzHugh-Nagumo</a>
       <a href="izhikevich.html">Izhikevich</a>
     </nav>
-    <button id="theme-toggle" aria-label="Toggle dark mode">🌙 Dark</button>
+    <button id="theme-toggle">
+      <svg class="icon-moon" width="18" height="18" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg>
+      <svg class="icon-sun" width="18" height="18" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M12 2.5v2.5M12 19v2.5M2.5 12H5M19 12h2.5M5.3 5.3l1.8 1.8M16.9 16.9l1.8 1.8M5.3 18.7l1.8-1.8M16.9 7.1l1.8-1.8" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+      <span class="sr-only"></span>
+    </button>
   `;
   document.body.insertBefore(header, document.body.firstChild);
+
+  // Target for the skip link: the page's main content (parsed after this script runs)
+  document.addEventListener('DOMContentLoaded', function () {
+    const main = document.querySelector('main, #page-wrapper');
+    if (!main) return;
+    main.id = main.id || 'main-content';
+    header.querySelector('.skip-link').setAttribute('href', '#' + main.id);
+    main.setAttribute('tabindex', '-1');
+  });
 
   // ── 2. Mark the current page's nav link as active ────────────────────────
   // Strip ".html" so clean URLs (/hh, served by some static hosts) also match
@@ -30,6 +44,7 @@
   header.querySelectorAll('nav a').forEach(function (link) {
     if (pageName(link.getAttribute('href')) === currentPage) {
       link.classList.add('active');
+      link.setAttribute('aria-current', 'page');
     }
   });
 
@@ -54,10 +69,12 @@
 
   // ── 4. Theme toggle with localStorage persistence ────────────────────────
   const btn = document.getElementById('theme-toggle');
+  const btnLabel = btn.querySelector('.sr-only');
 
   function applyTheme(isDark) {
     document.documentElement.setAttribute('data-theme', isDark ? 'dark' : '');
-    btn.textContent = isDark ? '☀️ Light' : '🌙 Dark';
+    btnLabel.textContent = isDark ? 'Switch to light theme' : 'Switch to dark theme';
+    btn.title = btnLabel.textContent;
   }
 
   // Restore saved preference; without one, follow the operating system setting

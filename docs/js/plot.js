@@ -20,6 +20,8 @@
  * theme changes, the canvas is resized, or the device pixel ratio changes.
  *
  * Labels accept a tiny markup: `_{sub}`, `^{sup}`, or `_x` / `^x` for a single character.
+ *
+ * Each canvas also gets role="img" and an aria-label summarising the plot for screen readers.
  */
 (function () {
   const specs = new WeakMap();
@@ -97,6 +99,41 @@
     return total;
   }
 
+  // ── Screen-reader summary ────────────────────────────────────────────────
+  function plainText(text) {
+    return String(text).replace(/[_^]\{([^}]*)\}/g, '$1').replace(/[_^](.)/g, '$1');
+  }
+
+  function describe(spec) {
+    const num = v => String(parseFloat(v.toPrecision(3))).replace('-', '\u2212');
+    const parts = [];
+    if (spec.title) parts.push(plainText(spec.title) + '.');
+    if (spec.raster) {
+      parts.push(`Open and closed periods of ${spec.raster.rows.length} channels over time.`);
+    }
+    const ranges = (spec.series || []).filter(s => s && s.y && s.label).map(s => {
+      let lo = Infinity;
+      let hi = -Infinity;
+      for (let i = 0; i < s.y.length; i++) {
+        if (Number.isFinite(s.y[i])) {
+          lo = Math.min(lo, s.y[i]);
+          hi = Math.max(hi, s.y[i]);
+        }
+      }
+      return lo === Infinity ? plainText(s.label) : `${plainText(s.label)} from ${num(lo)} to ${num(hi)}`;
+    });
+    if (ranges.length) {
+      const axes = [spec.yLabel, spec.y2Label].filter(Boolean).map(plainText).join(' and ');
+      parts.push(`Shows ${ranges.join('; ')}${axes ? ` (${axes})` : ''}.`);
+    }
+    if (spec.xLabel) {
+      const x = spec.x || {};
+      const span = x.min !== undefined && x.max !== undefined ? ` from ${num(x.min)} to ${num(x.max)}` : '';
+      parts.push(`Horizontal axis: ${plainText(spec.xLabel)}${span}.`);
+    }
+    return parts.join(' ');
+  }
+
   // ── Ticks ────────────────────────────────────────────────────────────────
   function niceStep(span, target, integer) {
     const raw = span / Math.max(1, target);
@@ -164,6 +201,8 @@
   function render(canvas, spec) {
     if (!canvas) return;
     specs.set(canvas, spec);
+    canvas.setAttribute('role', 'img');
+    canvas.setAttribute('aria-label', describe(spec));
     if (!bases.has(canvas)) {
       bases.set(canvas, { w: canvas.width, h: canvas.height });
       // Logical CSS width; page stylesheets may override it (e.g. width: 100%)
