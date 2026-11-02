@@ -38,6 +38,8 @@
   --na-color: #d55e00;
   --k-color: #0072b2;
   --leak-color: #009e73;
+  --cl-color: #009e73;
+  --ca-color: #cc79a7;
   --total-color: #2b2f36;
   --trajectory-color: #7a3fa0;
   --v-nullcline-color: #009e73;
@@ -87,6 +89,8 @@
   --na-color: #ff8c42;
   --k-color: #56b4e9;
   --leak-color: #3ddc97;
+  --cl-color: #3ddc97;
+  --ca-color: #e59ac8;
   --total-color: #e6e8eb;
   --trajectory-color: #c49bff;
   --v-nullcline-color: #3ddc97;

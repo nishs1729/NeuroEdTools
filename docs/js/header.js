@@ -14,6 +14,7 @@
       <svg width="20" height="20" viewBox="0 0 20 20" aria-hidden="true"><path d="M3 5h14M3 10h14M3 15h14" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
     </button>
     <nav id="site-nav" aria-label="Tools">
+      <a href="resting.html">Resting Potential</a>
       <a href="channel.html">Stochastic Channels</a>
       <a href="channelzoo.html">Channel Zoo</a>
       <a href="hh.html">Hodgkin-Huxley</a>

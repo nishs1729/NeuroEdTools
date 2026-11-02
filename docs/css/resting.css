@@ -1,0 +1,391 @@
+/* Resting membrane potential page */
+
+:root {
+    --cyto-bg: #f3f6fb;
+    --extra-bg: #fbf7ef;
+    --membrane-core: #eadfc3;
+    --lipid-head: #c9b27a;
+    --channel-fill: #ffffff;
+    --pore-bg: #fdfcf8;
+    --plus-color: #c2410c;
+    --minus-color: #1d4ed8;
+    --crosser-ring: #1f2328;
+    --chem-color: #e69f00;
+    --elec-color: #7a3fa0;
+}
+
+[data-theme="dark"] {
+    --cyto-bg: #172030;
+    --extra-bg: #221e17;
+    --membrane-core: #3d3626;
+    --lipid-head: #8a7646;
+    --channel-fill: #1a1d23;
+    --pore-bg: #1d1b16;
+    --plus-color: #ff8c42;
+    --minus-color: #7fb0ff;
+    --crosser-ring: #ffffff;
+    --chem-color: #f5c040;
+    --elec-color: #c49bff;
+}
+
+#page-wrapper {
+    max-width: 1320px;
+}
+
+.model-section {
+    max-width: none;
+}
+
+.plots-container {
+    max-width: 920px;
+}
+
+.plot-group {
+    max-width: none;
+}
+
+/* ── Controls ─────────────────────────────────────── */
+.button-row {
+    display: flex;
+    gap: 8px;
+}
+
+.btn {
+    flex: 1 1 0;
+    padding: 8px 12px;
+    font: inherit;
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: var(--text-color);
+    background: var(--input-bg);
+    border: 1px solid var(--input-border-color);
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+}
+
+.btn:hover {
+    border-color: var(--accent-color);
+}
+
+.btn-primary {
+    color: var(--accent-contrast);
+    background: var(--accent-color);
+    border-color: var(--accent-color);
+}
+
+.btn-primary:hover {
+    background: var(--accent-hover);
+}
+
+.text-btn {
+    align-self: flex-start;
+    padding: 0;
+    font: inherit;
+    font-size: 0.8125rem;
+    color: var(--accent-color);
+    background: none;
+    border: 0;
+    cursor: pointer;
+}
+
+.text-btn:hover {
+    text-decoration: underline;
+}
+
+.control-note {
+    margin: 0;
+    font-size: 0.8125rem;
+    color: var(--text-muted);
+}
+
+/* ── Membrane scene ───────────────────────────────── */
+.scene-card {
+    padding: 12px;
+}
+
+.scene-card canvas {
+    width: 100%;
+    border-radius: var(--radius-sm);
+}
+
+.scene-labels {
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+    gap: 8px;
+    margin-bottom: 8px;
+    font-size: 0.8125rem;
+    font-weight: 600;
+    color: var(--text-muted);
+}
+
+.scene-labels span:first-child { text-align: left; }
+.scene-labels span:nth-child(2) { text-align: center; }
+.scene-labels span:last-child { text-align: right; }
+
+.scene-legend {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 6px 20px;
+    margin-top: 10px;
+    font-size: 0.8125rem;
+    color: var(--text-muted);
+}
+
+.scene-legend .legend-item {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.dot {
+    display: inline-block;
+    width: 11px;
+    height: 11px;
+    border-radius: 50%;
+    background: var(--swatch, var(--k-color));
+    opacity: 0.85;
+}
+
+.dot.ring {
+    opacity: 1;
+    box-shadow: 0 0 0 2px var(--crosser-ring);
+}
+
+.charge-key {
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    color: var(--plus-color);
+}
+
+/* ── Forces and readouts ──────────────────────────── */
+.resting-panels {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    gap: 20px;
+}
+
+.panel-card {
+    padding: 16px 18px;
+    background: var(--card-bg);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow-card);
+}
+
+.panel-card h3 {
+    margin: 0 0 12px;
+    font-size: 0.9375rem;
+}
+
+.panel-note {
+    margin: 12px 0 0;
+    font-size: 0.8125rem;
+    color: var(--text-muted);
+}
+
+.force-axis {
+    display: flex;
+    justify-content: space-between;
+    margin: 0 0 6px calc(118px + 10px);
+    margin-right: calc(88px + 10px);
+    font-size: 0.75rem;
+    color: var(--text-muted);
+}
+
+.force-row {
+    display: grid;
+    grid-template-columns: 118px minmax(0, 1fr) 88px;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 8px;
+    font-size: 0.8125rem;
+}
+
+.force-row.net {
+    padding-top: 8px;
+    border-top: 1px solid var(--border-color);
+    font-weight: 600;
+}
+
+.force-value {
+    font-variant-numeric: tabular-nums;
+    text-align: right;
+}
+
+.force-track {
+    position: relative;
+    height: 14px;
+}
+
+/* Centre line: zero force */
+.force-track::before {
+    content: "";
+    position: absolute;
+    left: 50%;
+    top: -3px;
+    bottom: -3px;
+    border-left: 1px solid var(--plot-axis);
+}
+
+.force-bar {
+    position: absolute;
+    top: 3px;
+    height: 8px;
+    background: var(--bar-color);
+    border-radius: 2px;
+}
+
+/* Arrowhead at the bar's leading end */
+.force-bar::after {
+    content: "";
+    position: absolute;
+    top: -4px;
+    right: -7px;
+    border-style: solid;
+    border-width: 8px 0 8px 8px;
+    border-color: transparent transparent transparent var(--bar-color);
+}
+
+.force-bar.inward::after {
+    right: auto;
+    left: -7px;
+    border-width: 8px 8px 8px 0;
+    border-color: transparent var(--bar-color) transparent transparent;
+}
+
+.force-bar.zero::after {
+    display: none;
+}
+
+.force-bar.chem { --bar-color: var(--chem-color); }
+.force-bar.elec { --bar-color: var(--elec-color); }
+.force-bar.net { --bar-color: var(--text-color); }
+
+.readouts {
+    display: grid;
+    gap: 6px;
+    margin: 0;
+}
+
+.readouts div {
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+    font-size: 0.875rem;
+}
+
+.readouts dt {
+    color: var(--text-muted);
+}
+
+.readouts dd {
+    margin: 0;
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
+}
+
+.equation {
+    margin-top: 12px;
+    padding: 10px 12px;
+    background: var(--bg);
+    border-radius: var(--radius-sm);
+    font-size: 0.875rem;
+    line-height: 1.9;
+}
+
+.frac {
+    display: inline-flex;
+    flex-direction: column;
+    align-items: center;
+    vertical-align: middle;
+    line-height: 1.3;
+    font-size: 0.9em;
+}
+
+.frac span:first-child {
+    padding: 0 3px 1px;
+    border-bottom: 1px solid currentColor;
+}
+
+.frac span:last-child {
+    padding: 1px 3px 0;
+}
+
+.eq-numbers {
+    display: block;
+    color: var(--text-muted);
+}
+
+.eq-numbers strong {
+    color: var(--text-color);
+}
+
+/* ── Plots ────────────────────────────────────────── */
+.resting-plots {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    gap: 20px;
+}
+
+.resting-plots canvas {
+    width: 100%;
+}
+
+.info-box h3 {
+    margin: 0 0 8px;
+    font-size: 0.9375rem;
+}
+
+.info-box ul {
+    margin: 0;
+    padding-left: 20px;
+    font-size: 0.875rem;
+}
+
+.info-box li + li {
+    margin-top: 4px;
+}
+
+@media (max-width: 760px) {
+    .resting-panels,
+    .resting-plots {
+        grid-template-columns: minmax(0, 1fr);
+    }
+}
+
+@media (max-width: 420px) {
+    .force-row {
+        grid-template-columns: 84px minmax(0, 1fr) 76px;
+        gap: 8px;
+    }
+    .force-axis {
+        margin-left: calc(84px + 8px);
+        margin-right: calc(76px + 8px);
+    }
+}
+
+.plots-container > .info-box {
+    margin-top: 0;
+}
+
+/* channel.css styles every .model-section h2 as a part heading; restore the control-group look */
+.model-section .controls h2 {
+    margin: 0;
+    font-size: 0.75rem;
+    text-align: left;
+}
+
+.model-section .controls h2:not(:first-child) {
+    margin-top: 10px;
+}
+
+.controls {
+    align-self: flex-start;
+}
+
+@media (max-width: 1000px) {
+    .controls {
+        align-self: stretch;
+    }
+}

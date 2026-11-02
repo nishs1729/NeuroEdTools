@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Resting Membrane Potential — NeuroEdTools</title>
+    <script src="js/theme.js"></script>
+    <link rel="stylesheet" href="css/common.css">
+    <link rel="stylesheet" href="css/channel.css">
+    <link rel="stylesheet" href="css/resting.css">
+</head>
+<body>
+    <script src="js/header.js"></script>
+    <div id="page-wrapper">
+    <h1>Resting Membrane Potential</h1>
+
+    <!-- Part 1: One ion, one kind of channel — the Nernst potential -->
+    <div class="model-section" data-tab="One ion: Nernst">
+        <h2>Part 1: One Ion and the Nernst Potential</h2>
+        <div class="main-container">
+            <div class="controls">
+                <h2>Ion</h2>
+                <div class="slider-container">
+                    <label for="ion">Channels permeable to</label>
+                    <select id="ion">
+                        <option value="K" selected>Potassium (K⁺)</option>
+                        <option value="Na">Sodium (Na⁺)</option>
+                        <option value="Cl">Chloride (Cl⁻)</option>
+                        <option value="Ca">Calcium (Ca²⁺)</option>
+                    </select>
+                </div>
+
+                <h2>Concentrations</h2>
+                <div class="slider-container">
+                    <label for="c_in"><span class="ion-name">K⁺</span> inside</label>
+                    <input type="range" id="c_in" min="-4" max="2.7" step="0.01" value="2.146">
+                    <span id="c_in-value">140 mM</span>
+                </div>
+                <div class="slider-container">
+                    <label for="c_out"><span class="ion-name">K⁺</span> outside</label>
+                    <input type="range" id="c_out" min="-4" max="2.7" step="0.01" value="0.699">
+                    <span id="c_out-value">5.0 mM</span>
+                </div>
+                <div class="slider-container">
+                    <label for="temp">Temperature (°C)</label>
+                    <input type="range" id="temp" min="0" max="45" step="1" value="37">
+                    <span id="temp-value">37</span>
+                </div>
+                <button type="button" id="defaults" class="text-btn">Typical neuron values</button>
+
+                <h2>Simulation</h2>
+                <div class="button-row">
+                    <button type="button" id="play" class="btn btn-primary" aria-pressed="true">Pause</button>
+                    <button type="button" id="reset" class="btn">Reset to 0 mV</button>
+                </div>
+                <p class="control-note">Reset discharges the membrane. Watch the ions that cross charge it up again until the potential settles.</p>
+            </div>
+
+            <div class="plots-container">
+                <div class="plot-group scene-card">
+                    <div class="scene-labels" aria-hidden="true">
+                        <span>Inside the cell</span>
+                        <span>Membrane</span>
+                        <span>Outside the cell</span>
+                    </div>
+                    <canvas id="scene" width="800" height="400"></canvas>
+                    <div class="scene-legend">
+                        <span class="legend-item"><span class="dot" id="legend-ion-dot"></span><span class="ion-name">K⁺</span> ion</span>
+                        <span class="legend-item"><span class="dot ring" id="legend-cross-dot"></span>crossing now</span>
+                        <span class="legend-item"><span class="charge-key">+ −</span>excess charge held at the membrane</span>
+                    </div>
+                </div>
+
+                <div class="resting-panels">
+                    <div class="panel-card">
+                        <h3>Forces on a <span class="ion-name">K⁺</span> ion in the channel</h3>
+                        <div class="force-axis" aria-hidden="true"><span>← into the cell</span><span>out of the cell →</span></div>
+                        <div class="force-row">
+                            <span class="force-label">Concentration gradient</span>
+                            <div class="force-track"><div class="force-bar chem" id="force-chem"></div></div>
+                            <span class="force-value" id="force-chem-value"></span>
+                        </div>
+                        <div class="force-row">
+                            <span class="force-label">Electrical</span>
+                            <div class="force-track"><div class="force-bar elec" id="force-elec"></div></div>
+                            <span class="force-value" id="force-elec-value"></span>
+                        </div>
+                        <div class="force-row net">
+                            <span class="force-label">Net</span>
+                            <div class="force-track"><div class="force-bar net" id="force-net"></div></div>
+                            <span class="force-value" id="force-net-value"></span>
+                        </div>
+                        <p class="panel-note">Both forces are given as equivalent voltages, so they can be compared directly. They balance when V<sub>m</sub> = E.</p>
+                    </div>
+
+                    <div class="panel-card">
+                        <h3>Readouts</h3>
+                        <dl class="readouts">
+                            <div><dt>Membrane potential V<sub>m</sub></dt><dd id="readout-v"></dd></div>
+                            <div><dt>Nernst potential E<sub class="ion-sub">K</sub></dt><dd id="readout-e"></dd></div>
+                            <div><dt>Driving force V<sub>m</sub> − E</dt><dd id="readout-drive"></dd></div>
+                        </dl>
+                        <div class="equation" id="equation" aria-live="off"></div>
+                        <p class="panel-note" id="moved-note"></p>
+                    </div>
+                </div>
+
+                <div class="resting-plots">
+                    <div class="plot-group">
+                        <canvas id="plot-v" width="400" height="230"></canvas>
+                    </div>
+                    <div class="plot-group">
+                        <canvas id="plot-flux" width="400" height="230"></canvas>
+                    </div>
+                </div>
+
+                <div class="info-box">
+                    <h3>What to notice</h3>
+                    <ul>
+                        <li>With V<sub>m</sub> at 0 mV, K⁺ ions leave the cell down their concentration gradient. Each one carries a positive charge out, so the inside becomes negative.</li>
+                        <li>As the inside becomes negative it pulls K⁺ back in. V<sub>m</sub> stops changing at the Nernst potential, where the electrical pull exactly balances the concentration gradient.</li>
+                        <li>At equilibrium, ions still cross in both directions, but at equal rates. The flux plot shows the two rates meeting.</li>
+                        <li>Only a tiny number of ions has to cross to charge the membrane, so the concentrations barely change.</li>
+                        <li>Try Na⁺ or Cl⁻, swap the inside and outside concentrations, or make them equal.</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+    </div>
+    <script src="js/plot.js"></script>
+    <script src="js/resting.js"></script>
+    <script src="js/steps.js"></script>
+</body>
+</html>

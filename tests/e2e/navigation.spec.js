@@ -9,6 +9,7 @@ import { test, expect } from '@playwright/test';
 
 const PAGES = [
   { path: '/', title: 'NeuroEdTools' },
+  { path: '/resting.html', title: 'Resting Membrane Potential' },
   { path: '/hh.html', title: 'Hodgkin-Huxley' },
   { path: '/channel.html', title: 'Stochastic Channel' },
   { path: '/channelzoo.html', title: 'Zoo of Ion Channels' },
@@ -31,9 +32,10 @@ test.describe('Site header — presence and structure', () => {
     await expect(logo).toHaveAttribute('href', 'index.html');
   });
 
-  test('all 5 tool nav links are present in the header', async ({ page }) => {
+  test('all 6 tool nav links are present in the header', async ({ page }) => {
     await page.goto('/');
     const nav = page.locator('#site-header nav');
+    await expect(nav.locator('a[href="resting.html"]')).toBeVisible();
     await expect(nav.locator('a[href="hh.html"]')).toBeVisible();
     await expect(nav.locator('a[href="channel.html"]')).toBeVisible();
     await expect(nav.locator('a[href="channelzoo.html"]')).toBeVisible();
@@ -136,6 +138,7 @@ test.describe('Navigation — clicking nav links', () => {
 
   test('each nav link navigates to the correct page', async ({ page }) => {
     const links = [
+      { href: 'resting.html', titleContains: 'Resting Membrane Potential' },
       { href: 'hh.html', titleContains: 'Hodgkin-Huxley' },
       { href: 'channel.html', titleContains: 'Stochastic Channel' },
       { href: 'channelzoo.html', titleContains: 'Zoo of Ion Channels' },
@@ -151,10 +154,10 @@ test.describe('Navigation — clicking nav links', () => {
 });
 
 test.describe('Index page — tool cards', () => {
-  test('all 5 tool cards are visible', async ({ page }) => {
+  test('all 6 tool cards are visible', async ({ page }) => {
     await page.goto('/');
     const cards = page.locator('.tool-card');
-    await expect(cards).toHaveCount(5);
+    await expect(cards).toHaveCount(6);
   });
 
   test('tool cards are clickable links', async ({ page }) => {
